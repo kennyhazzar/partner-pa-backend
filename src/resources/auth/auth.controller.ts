@@ -6,14 +6,19 @@ import {
   UnauthorizedException,
 } from '@nestjs/common';
 import { AuthService } from './auth.service';
-import { LoginResponse, VerifyCodeDto } from './dto';
+import {
+  LoginResponse,
+  RefreshTokenDto,
+  SendCodeDto,
+  VerifyCodeDto,
+} from './dto';
 
 @Controller('auth')
 export class AuthController {
   constructor(private readonly authService: AuthService) {}
 
   @Post('send-code')
-  async sendVerificationCode(@Body('email') email: string): Promise<void> {
+  async sendVerificationCode(@Body() { email }: SendCodeDto): Promise<void> {
     await this.authService.sendVerificationCode(email);
   }
 
@@ -33,7 +38,7 @@ export class AuthController {
 
   @Post('refresh-token')
   async refreshToken(
-    @Body('refresh_token') refreshToken: string,
+    @Body() { refreshToken }: RefreshTokenDto,
   ): Promise<LoginResponse> {
     try {
       return await this.authService.refreshToken(refreshToken);
