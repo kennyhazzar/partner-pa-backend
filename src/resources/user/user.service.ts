@@ -4,6 +4,8 @@ import { RefreshToken, User } from './entities';
 import { Repository } from 'typeorm';
 import { Cache } from 'cache-manager';
 import { CACHE_MANAGER } from '@nestjs/cache-manager';
+import { getRandomCode } from '@core/utils';
+import { ALPHABET } from '@core/constants';
 
 @Injectable()
 export class UserService {
@@ -43,7 +45,7 @@ export class UserService {
     expirationTime.setDate(expirationTime.getDate() + 7);
 
     const refreshToken = this.refreshTokenRepository.create({
-      token: this.generateToken(),
+      token: getRandomCode(120, ALPHABET),
       user,
       expiresAt: expirationTime,
     });
@@ -60,9 +62,5 @@ export class UserService {
 
   async deleteRefreshToken(token: string): Promise<void> {
     await this.refreshTokenRepository.delete({ token });
-  }
-
-  private generateToken(): string {
-    return Math.random().toString(36).substr(2);
   }
 }

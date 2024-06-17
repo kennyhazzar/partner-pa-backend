@@ -7,6 +7,7 @@ import { UserService } from '../user/user.service';
 import { ConfigService } from '@nestjs/config';
 import { EmailConfigs } from '@core/types';
 import { LoginResponse } from './dto';
+import { getRandomCode } from '@core/utils';
 
 @Injectable()
 export class AuthService {
@@ -17,13 +18,10 @@ export class AuthService {
     @Inject(CACHE_MANAGER) private cacheManager: Cache,
   ) {}
 
+  private readonly mailConfig = this.getMailConfig();
+
   async sendVerificationCode(email: string): Promise<void> {
-    const {
-      host,
-      port,
-      pass,
-      user: emailUser,
-    } = this.configService.get<EmailConfigs>('email');
+    const { host, pass, port, user: emailUser } = this.mailConfig;
 
     const user = await this.usersService.findOne(email);
 
@@ -31,7 +29,7 @@ export class AuthService {
       await this.usersService.create(email);
     }
 
-    const code = Math.floor(100000 + Math.random() * 900000).toString();
+    const code = getRandomCode();
 
     await this.cacheManager.set(`verify_code_${email}`, code, 600);
 
@@ -105,5 +103,9 @@ export class AuthService {
       accessToken: newAccessToken,
       refreshToken: newRefreshToken.token,
     };
+  }
+
+  private getMailConfig(): EmailConfigs {
+    return this.configService.get<EmailConfigs>('email');
   }
 }
