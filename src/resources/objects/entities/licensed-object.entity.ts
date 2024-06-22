@@ -2,6 +2,7 @@ import { Column, Entity, ManyToOne, OneToMany } from 'typeorm';
 import { PrimaryIncrementBaseEntity } from '@core/db';
 import { User } from '@resources/user/entities';
 import { LicensedDocument } from './licensed-document.entity';
+import { Partner } from '@resources/partners/entities';
 
 @Entity()
 export class LicensedObject extends PrimaryIncrementBaseEntity {
@@ -31,4 +32,7 @@ export class LicensedObject extends PrimaryIncrementBaseEntity {
     (licensedDocument) => licensedDocument.licensedObject,
   )
   licensedDocuments: LicensedDocument[];
+
+  @ManyToOne(() => Partner, (partner) => partner.commissions)
+  partner: Partner;
 }
