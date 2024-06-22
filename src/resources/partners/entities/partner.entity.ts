@@ -14,9 +14,9 @@ export class Partner extends PrimaryIncrementBaseEntity {
   @Column({ nullable: true })
   kpp?: string;
 
-  @OneToMany(() => User, user => user.partner)
+  @OneToMany(() => User, (user) => user.partner)
   managers: User[];
 
-  @OneToMany(() => Commission, commission => commission.partner)
+  @OneToMany(() => Commission, (commission) => commission.partner)
   commissions: Commission[];
 }

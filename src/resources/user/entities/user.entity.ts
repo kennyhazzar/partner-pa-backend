@@ -40,6 +40,6 @@ export class User extends PrimaryUuidBaseEntity {
   @OneToMany(() => LicensedObject, (licensedObject) => licensedObject.manager)
   licensedObjects: LicensedObject[];
 
-  @ManyToOne(() => Partner, partner => partner.managers)
+  @ManyToOne(() => Partner, (partner) => partner.managers)
   partner: Partner;
 }

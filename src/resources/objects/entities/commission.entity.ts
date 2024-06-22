@@ -10,6 +10,6 @@ export class Commission extends PrimaryUuidBaseEntity {
   @Column()
   managerCommission: number;
 
-  @ManyToOne(() => Partner, partner => partner.commissions)
+  @ManyToOne(() => Partner, (partner) => partner.commissions)
   partner: Partner;
 }
