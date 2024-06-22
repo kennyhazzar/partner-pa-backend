@@ -1,12 +1,9 @@
-import { Entity, Column, PrimaryGeneratedColumn, ManyToOne } from 'typeorm';
+import { Entity, Column, ManyToOne } from 'typeorm';
 import { User } from './user.entity';
-import { BaseEntity } from '@core/db';
+import { PrimaryUuidBaseEntity } from '@core/db';
 
 @Entity()
-export class RefreshToken extends BaseEntity {
-  @PrimaryGeneratedColumn()
-  id: number;
-
+export class RefreshToken extends PrimaryUuidBaseEntity {
   @Column()
   token: string;
 

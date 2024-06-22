@@ -4,6 +4,8 @@ import {
   Body,
   BadRequestException,
   UnauthorizedException,
+  HttpCode,
+  HttpStatus,
 } from '@nestjs/common';
 import { AuthService } from './auth.service';
 import {
@@ -18,11 +20,13 @@ export class AuthController {
   constructor(private readonly authService: AuthService) {}
 
   @Post('send-code')
+  @HttpCode(HttpStatus.OK)
   async sendVerificationCode(@Body() { email }: SendCodeDto): Promise<void> {
     await this.authService.sendVerificationCode(email);
   }
 
   @Post('verify-code')
+  @HttpCode(HttpStatus.OK)
   async verifyCode(
     @Body() { email, code }: VerifyCodeDto,
   ): Promise<LoginResponse> {
@@ -37,6 +41,7 @@ export class AuthController {
   }
 
   @Post('refresh-token')
+  @HttpCode(HttpStatus.OK)
   async refreshToken(
     @Body() { refreshToken }: RefreshTokenDto,
   ): Promise<LoginResponse> {
