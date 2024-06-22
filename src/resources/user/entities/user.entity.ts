@@ -1,9 +1,12 @@
-import { BaseEntity } from '@core/db';
-import { Column, Entity, OneToMany } from 'typeorm';
+import { PrimaryUuidBaseEntity } from '@core/db';
+import { Column, Entity, ManyToOne, OneToMany } from 'typeorm';
 import { RefreshToken } from './refresh-token.entity';
+import { LicensedObject } from '@resources/objects/entities';
+import { UserRole } from '@core/types';
+import { Partner } from '@resources/partners/entities';
 
 @Entity()
-export class User extends BaseEntity {
+export class User extends PrimaryUuidBaseEntity {
   @Column({ unique: true, nullable: true })
   email: string;
 
@@ -28,9 +31,15 @@ export class User extends BaseEntity {
   @Column({ nullable: true })
   lastName: string;
 
-  @Column({ default: 'user' })
-  role: string; //!TODO: Сделать енам с ролями
+  @Column({ type: 'enum', enum: UserRole, default: UserRole.USER })
+  role: UserRole;
 
   @OneToMany(() => RefreshToken, (refreshToken) => refreshToken.user)
   refreshTokens: RefreshToken[];
+
+  @OneToMany(() => LicensedObject, (licensedObject) => licensedObject.manager)
+  licensedObjects: LicensedObject[];
+
+  @ManyToOne(() => Partner, partner => partner.managers)
+  partner: Partner;
 }
