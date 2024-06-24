@@ -1,4 +1,10 @@
-import { Injectable, Inject, UnauthorizedException } from '@nestjs/common';
+import {
+  Injectable,
+  Inject,
+  UnauthorizedException,
+  BadRequestException,
+  InternalServerErrorException,
+} from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import * as nodemailer from 'nodemailer';
 import { Cache } from 'cache-manager';
@@ -6,7 +12,7 @@ import { CACHE_MANAGER } from '@nestjs/cache-manager';
 import { UserService } from '../user/user.service';
 import { ConfigService } from '@nestjs/config';
 import { EmailConfigs } from '@core/types';
-import { LoginResponse } from './dto';
+import { LoginResponse, SendVerifyCode } from './dto';
 import { getRandomCode } from '@core/utils';
 
 @Injectable()
@@ -21,33 +27,48 @@ export class AuthService {
   private readonly mailConfig = this.getMailConfig();
 
   async sendVerificationCode(email: string): Promise<void> {
-    const { host, pass, port, user: emailUser } = this.mailConfig;
+      const { host, pass, port, user: emailUser } = this.mailConfig;
 
-    const user = await this.usersService.findOne(email);
+      const user = await this.usersService.findOneByEmail(email);
 
-    if (!user) {
-      await this.usersService.create(email);
-    }
+      if (!user) {
+        await this.usersService.create(email);
+      }
 
-    const code = getRandomCode();
+      const code = getRandomCode();
 
-    await this.cacheManager.set(`verify_code_${email}`, code, 600);
+      const verifyCache = await this.cacheManager.get<SendVerifyCode>(
+        `verify_code_${email}`,
+      );
 
-    const transporter = nodemailer.createTransport({
-      host,
-      port,
-      auth: {
-        user: emailUser,
-        pass,
-      },
-    });
+      if (verifyCache?.lastSent && Date.now() - verifyCache?.lastSent < 60000) {
+        throw new BadRequestException(
+          `Please wait a minute before requesting a new code.`,
+        );
+      }
 
-    await transporter.sendMail({
-      from: emailUser,
-      to: email,
-      subject: 'Your verification code',
-      text: `Your verification code is: ${code}`,
-    });
+      await this.cacheManager.set(
+        `verify_code_${email}`,
+        { code, lastSent: Date.now() },
+        600,
+      );
+
+      // const transporter = nodemailer.createTransport({
+      //   host,
+      //   port,
+      //   auth: {
+      //     user: emailUser,
+      //     pass,
+      //   },
+      // });
+
+      // await transporter.sendMail({
+      //   from: emailUser,
+      //   to: email,
+      //   subject: 'Your verification code',
+      //   text: `Your verification code is: ${code}`,
+      // });
+    
   }
 
   async validateVerificationCode(
@@ -56,7 +77,8 @@ export class AuthService {
   ): Promise<boolean> {
     const cacheKey = `verify_code_${email}`;
 
-    const cachedCode = await this.cacheManager.get<string>(cacheKey);
+    const { code: cachedCode } =
+      await this.cacheManager.get<SendVerifyCode>(cacheKey);
     if (code === +cachedCode) {
       await this.cacheManager.del(cacheKey);
       return true;
@@ -66,7 +88,7 @@ export class AuthService {
   }
 
   async login(email: string): Promise<LoginResponse> {
-    const user = await this.usersService.findOne(email);
+    const user = await this.usersService.findOneByEmail(email);
     if (!user) {
       throw new UnauthorizedException();
     }

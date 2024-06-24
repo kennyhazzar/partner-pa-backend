@@ -1,16 +1,81 @@
-import { Controller, Get, Req, UseGuards } from '@nestjs/common';
+import {
+  Body,
+  Controller,
+  Delete,
+  Get,
+  HttpStatus,
+  Put,
+  Req,
+  UseGuards,
+} from '@nestjs/common';
 import { UserService } from './user.service';
-import { Request } from 'express';
-import { User } from './entities';
 import { AuthGuard } from '../auth/auth.guard';
+import { ProfileDto, UserRequestContext } from './dto';
+import {
+  ApiBearerAuth,
+  ApiOperation,
+  ApiResponse,
+  ApiTags,
+} from '@nestjs/swagger';
 
-@Controller('user')
+@ApiTags('users')
+@ApiBearerAuth()
+@Controller('users')
 export class UserController {
   constructor(private readonly userService: UserService) {}
 
-  @Get('profile')
+  @ApiOperation({
+    summary: 'Получение данных о своем профиле',
+    description: 'Метод в разработке. Возможно в дальнейшем его и не будет)',
+  })
+  @ApiResponse({
+    description: 'Профиль пользователя',
+    type: ProfileDto,
+  })
+  @ApiBearerAuth()
+  @Get()
   @UseGuards(AuthGuard)
-  async getProfile(@Req() req: Request & { user: User }) {
-    return this.userService.findOne(req.user.email);
+  async get(@Req() req: UserRequestContext): Promise<ProfileDto> {
+    return this.userService.findOneByEmail(req.user.email, {
+      email: true,
+      phone: true,
+      itn: true,
+      firstName: true,
+      secondName: true,
+      lastName: true,
+    });
+  }
+
+  @ApiOperation({
+    summary: 'Обновление данных своего профиля',
+    description: 'Метод в разработке. Возможно в дальнейшем его и не будет)',
+  })
+  @ApiResponse({
+    description: 'Профиль пользователя',
+    type: ProfileDto,
+  })
+  @ApiBearerAuth()
+  @Put()
+  @UseGuards(AuthGuard)
+  async update(
+    @Req() req: UserRequestContext,
+    @Body() payload: ProfileDto,
+  ) {
+    return this.userService.updateProfile(req.user, payload);
+  }
+
+  @ApiOperation({
+    summary: 'Удаление профиля',
+    description: 'Метод в разработке. Возможно в дальнейшем его и не будет)',
+  })
+  @ApiResponse({
+    description: 'Удалено успешно',
+    status: HttpStatus.OK,
+  })
+  @ApiBearerAuth()
+  @Delete()
+  @UseGuards(AuthGuard)
+  async delete(@Req() req: UserRequestContext) {
+    return this.userService.deleteByEmail(req.user.email);
   }
 }
