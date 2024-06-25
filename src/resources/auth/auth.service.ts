@@ -53,21 +53,21 @@ export class AuthService {
         600,
       );
 
-      // const transporter = nodemailer.createTransport({
-      //   host,
-      //   port,
-      //   auth: {
-      //     user: emailUser,
-      //     pass,
-      //   },
-      // });
+      const transporter = nodemailer.createTransport({
+        host,
+        port,
+        auth: {
+          user: emailUser,
+          pass,
+        },
+      });
 
-      // await transporter.sendMail({
-      //   from: emailUser,
-      //   to: email,
-      //   subject: 'Your verification code',
-      //   text: `Your verification code is: ${code}`,
-      // });
+      await transporter.sendMail({
+        from: emailUser,
+        to: email,
+        subject: 'Your verification code',
+        text: `Your verification code is: ${code}`,
+      });
     
   }
 
