@@ -11,7 +11,7 @@ import { Cache } from 'cache-manager';
 import { CACHE_MANAGER } from '@nestjs/cache-manager';
 import { UserService } from '../user/user.service';
 import { ConfigService } from '@nestjs/config';
-import { EmailConfigs } from '@core/types';
+import { CommonConfigs, EmailConfigs } from '@core/types';
 import { LoginResponse, SendVerifyCode } from './dto';
 import { getRandomCode } from '@core/utils';
 
@@ -25,6 +25,7 @@ export class AuthService {
   ) {}
 
   private readonly mailConfig = this.getMailConfig();
+  private readonly commonConfig = this.getCommonConfig();
 
   async sendVerificationCode(email: string): Promise<void> {
       const { host, pass, port, user: emailUser } = this.mailConfig;
@@ -53,22 +54,23 @@ export class AuthService {
         600,
       );
 
-      const transporter = nodemailer.createTransport({
-        host,
-        port,
-        auth: {
-          user: emailUser,
-          pass,
-        },
-      });
-
-      await transporter.sendMail({
-        from: emailUser,
-        to: email,
-        subject: 'Your verification code',
-        text: `Your verification code is: ${code}`,
-      });
-    
+      if (this.commonConfig.env === 'production') {
+        const transporter = nodemailer.createTransport({
+          host,
+          port,
+          auth: {
+            user: emailUser,
+            pass,
+          },
+        });
+  
+        await transporter.sendMail({
+          from: emailUser,
+          to: email,
+          subject: 'Your verification code',
+          text: `Your verification code is: ${code}`,
+        });
+      }
   }
 
   async validateVerificationCode(
@@ -129,5 +131,9 @@ export class AuthService {
 
   private getMailConfig(): EmailConfigs {
     return this.configService.get<EmailConfigs>('email');
+  }
+
+  private getCommonConfig(): CommonConfigs {
+    return this.configService.get<CommonConfigs>('common');
   }
 }
