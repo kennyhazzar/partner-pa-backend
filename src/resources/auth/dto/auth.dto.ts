@@ -2,15 +2,10 @@ import { ApiProperty } from '@nestjs/swagger';
 import {
   IsDefined,
   IsEmail,
-  IsNumber,
-  IsOptional,
-  IsPhoneNumber,
   IsString,
-  IsStrongPassword,
   Length,
   MinLength,
 } from 'class-validator';
-import { ProfileDto } from '../../user/dto';
 
 export class SendCodeDto {
   @ApiProperty({
@@ -48,7 +43,7 @@ export class RegisterDto extends LoginDto {
 
 export class VerifyCodeDto extends SendCodeDto {
   @ApiProperty({
-    example: 123456,
+    example: '000000',
     description: 'Код для верификации почты',
     required: true,
   })
@@ -56,6 +51,24 @@ export class VerifyCodeDto extends SendCodeDto {
   @IsString()
   @Length(6, 6)
   code: string;
+}
+
+export class ResetPasswordDto extends SendCodeDto {
+  @ApiProperty({
+    description: 'Токен сброса пароля',
+    example: 'token',
+    required: true,
+  })
+  @IsDefined()
+  @IsString()
+  token: string;
+  @ApiProperty({
+    description: 'Новый пароль пользователя',
+    required: true,
+  })
+  @IsDefined()
+  @IsString()
+  newPassword: string;
 }
 
 export class RefreshTokenDto {

@@ -14,6 +14,8 @@ import { CommonConfigs, EmailConfigs } from '@core/types';
 import { LoginResponse, SendVerifyCode } from './dto';
 import { getRandomCode } from '@core/utils';
 import * as bcrypt from 'bcrypt';
+import Mail from 'nodemailer/lib/mailer';
+import { ALPHABET } from '@core/constants';
 
 @Injectable()
 export class AuthService {
@@ -44,15 +46,14 @@ export class AuthService {
   }
 
   async sendVerificationCode(email: string): Promise<void> {
-    const { host, pass, port, user: emailUser } = this.mailConfig;
-
     const user = await this.usersService.findOneByEmail(email);
 
     if (!user) {
       throw new BadRequestException('Email not found');
     }
 
-    const code = getRandomCode();
+    const code =
+      this.commonConfig.env === 'production' ? getRandomCode() : '000000';
 
     const verifyCache = await this.cacheManager.get<SendVerifyCode>(
       `verify_code_${email}`,
@@ -60,7 +61,7 @@ export class AuthService {
 
     if (verifyCache?.lastSent && Date.now() - verifyCache?.lastSent < 60000) {
       throw new BadRequestException(
-        `Please wait a minute before requesting a new code.`,
+        `Пожалуйста, подождите минуту, прежде чем запрашивать новый код.`,
       );
     }
 
@@ -71,20 +72,10 @@ export class AuthService {
     );
 
     if (this.commonConfig.env === 'production') {
-      const transporter = nodemailer.createTransport({
-        host,
-        port,
-        auth: {
-          user: emailUser,
-          pass,
-        },
-      });
-
-      await transporter.sendMail({
-        from: emailUser,
+      await this.sendMail({
         to: email,
-        subject: 'Your verification code',
-        text: `Your verification code is: ${code}`,
+        subject: 'Код верификации',
+        text: `Ваш код верификации: ${code}`,
       });
     }
   }
@@ -107,6 +98,7 @@ export class AuthService {
 
   async login(email: string, password: string): Promise<LoginResponse> {
     const user = await this.usersService.findOneByEmail(email);
+
     if (!user || !(await bcrypt.compare(password, user.password))) {
       throw new UnauthorizedException('Неверный пароль');
     }
@@ -149,11 +141,71 @@ export class AuthService {
     };
   }
 
+  async sendPasswordResetToken(email: string): Promise<void> {
+    const user = await this.usersService.findOneByEmail(email);
+
+    if (!user) {
+      throw new BadRequestException('Пользователь не найден');
+    }
+
+    const resetToken =
+      this.commonConfig.env === 'production'
+        ? getRandomCode(100, ALPHABET)
+        : 'token';
+
+    this.cacheManager.set(`reset_${email}`, resetToken, 3600);
+
+    if (this.commonConfig.env === 'production') {
+      await this.sendMail({
+        to: email,
+        subject: 'Сброс пароля',
+        text: `Ваш токен для сброса пароля: ${resetToken}`,
+      });
+    }
+  }
+
+  async resetPassword(
+    email: string,
+    token: string,
+    newPassword: string,
+  ): Promise<void> {
+    const cacheKey = `reset_${email}`;
+
+    const cachedToken = await this.cacheManager.get<string>(cacheKey);
+
+    if (cachedToken !== token) {
+      throw new BadRequestException(
+        `Неверный или просроченный токен сброса пароля`,
+      );
+    }
+
+    await this.usersService.updatePassword(email, newPassword);
+  }
+
   private getMailConfig(): EmailConfigs {
     return this.configService.get<EmailConfigs>('email');
   }
 
   private getCommonConfig(): CommonConfigs {
     return this.configService.get<CommonConfigs>('common');
+  }
+
+  private async sendMail(mailOptions: Mail.Options) {
+    //TODO: вынести в нестовый сервис
+    const { host, pass, port, user: emailUser } = this.mailConfig;
+
+    const transporter = nodemailer.createTransport({
+      host,
+      port,
+      auth: {
+        user: emailUser,
+        pass,
+      },
+    });
+
+    await transporter.sendMail({
+      from: emailUser,
+      ...mailOptions,
+    });
   }
 }
