@@ -32,7 +32,6 @@ export class UserController {
     description: 'Профиль пользователя',
     type: ProfileDto,
   })
-  @ApiBearerAuth()
   @Get()
   @UseGuards(AuthGuard)
   async get(@Req() req: UserRequestContext): Promise<ProfileDto> {
@@ -54,7 +53,6 @@ export class UserController {
     description: 'Профиль пользователя',
     type: ProfileDto,
   })
-  @ApiBearerAuth()
   @Put()
   @UseGuards(AuthGuard)
   async update(@Req() req: UserRequestContext, @Body() payload: ProfileDto) {
@@ -69,7 +67,6 @@ export class UserController {
     description: 'Удалено успешно',
     status: HttpStatus.OK,
   })
-  @ApiBearerAuth()
   @Delete()
   @UseGuards(AuthGuard)
   async delete(@Req() req: UserRequestContext) {
