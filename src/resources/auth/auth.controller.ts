@@ -15,7 +15,7 @@ import {
   RefreshTokenDto,
   RegisterDto,
   ResetPasswordDto,
-  SendCodeDto,
+  EmailDto,
   VerifyCodeDto,
 } from './dto';
 import { ApiBody, ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
@@ -69,7 +69,7 @@ export class AuthController {
   })
   @ApiBody({
     description: 'Тело запроса для отправки кода',
-    type: SendCodeDto,
+    type: EmailDto,
   })
   @ApiResponse({
     status: HttpStatus.OK,
@@ -82,7 +82,7 @@ export class AuthController {
   @Post('send-code')
   @HttpCode(HttpStatus.OK)
   @UseGuards(ThrottlerBehindProxyGuard)
-  async sendVerificationCode(@Body() { email }: SendCodeDto): Promise<void> {
+  async sendVerificationCode(@Body() { email }: EmailDto): Promise<void> {
     await this.authService.sendVerificationCode(email);
   }
 
@@ -140,13 +140,13 @@ export class AuthController {
   })
   @ApiBody({
     description: 'Для сброса нужна только электронная почта пользователя',
-    type: SendCodeDto,
+    type: EmailDto,
     required: true,
   })
   @HttpCode(HttpStatus.OK)
   @Post('forgot-password')
   @UseGuards(ThrottlerBehindProxyGuard)
-  async forgotPassword(@Body() { email }: SendCodeDto): Promise<void> {
+  async forgotPassword(@Body() { email }: EmailDto): Promise<void> {
     await this.authService.sendPasswordResetToken(email);
   }
 

@@ -2,12 +2,13 @@ import { ApiProperty } from '@nestjs/swagger';
 import {
   IsDefined,
   IsEmail,
+  IsNumberString,
   IsString,
   Length,
   MinLength,
 } from 'class-validator';
 
-export class SendCodeDto {
+export class EmailDto {
   @ApiProperty({
     example: 'noname@mail.co',
     description: 'Электронная почта пользователя',
@@ -18,7 +19,7 @@ export class SendCodeDto {
   email: string;
 }
 
-export class LoginDto extends SendCodeDto {
+export class LoginDto extends EmailDto {
   @ApiProperty({
     example: 'somepass123',
     description: 'Пароль пользователя',
@@ -41,19 +42,19 @@ export class RegisterDto extends LoginDto {
   firstName: string;
 }
 
-export class VerifyCodeDto extends SendCodeDto {
+export class VerifyCodeDto extends EmailDto {
   @ApiProperty({
     example: '000000',
     description: 'Код для верификации почты',
     required: true,
   })
   @IsDefined()
-  @IsString()
+  @IsNumberString()
   @Length(6, 6)
   code: string;
 }
 
-export class ResetPasswordDto extends SendCodeDto {
+export class ResetPasswordDto extends EmailDto {
   @ApiProperty({
     description: 'Токен сброса пароля',
     example: 'token',
