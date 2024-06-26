@@ -9,7 +9,7 @@ import {
   UseGuards,
 } from '@nestjs/common';
 import { UserService } from './user.service';
-import { AuthGuard } from '../auth/auth.guard';
+import { AuthGuard } from '@resources/auth/guards';
 import { ProfileDto, UserRequestContext } from './dto';
 import {
   ApiBearerAuth,

@@ -6,6 +6,7 @@ import {
   UnauthorizedException,
   HttpCode,
   HttpStatus,
+  UseGuards,
 } from '@nestjs/common';
 import { AuthService } from './auth.service';
 import {
@@ -18,6 +19,7 @@ import {
   VerifyCodeDto,
 } from './dto';
 import { ApiBody, ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
+import { ThrottlerBehindProxyGuard } from './guards';
 
 @ApiTags('authorization')
 @Controller('auth')
@@ -36,6 +38,7 @@ export class AuthController {
   })
   @Post('register')
   @HttpCode(HttpStatus.OK)
+  @UseGuards(ThrottlerBehindProxyGuard)
   async register(
     @Body() { email, password, firstName }: RegisterDto,
   ): Promise<void> {
@@ -54,6 +57,7 @@ export class AuthController {
   })
   @Post('login')
   @HttpCode(HttpStatus.OK)
+  @UseGuards(ThrottlerBehindProxyGuard)
   async login(@Body() { email, password }: LoginDto): Promise<LoginResponse> {
     return this.authService.login(email, password);
   }
@@ -77,6 +81,7 @@ export class AuthController {
   })
   @Post('send-code')
   @HttpCode(HttpStatus.OK)
+  @UseGuards(ThrottlerBehindProxyGuard)
   async sendVerificationCode(@Body() { email }: SendCodeDto): Promise<void> {
     await this.authService.sendVerificationCode(email);
   }
@@ -91,6 +96,7 @@ export class AuthController {
   })
   @Post('verify-code')
   @HttpCode(HttpStatus.OK)
+  @UseGuards(ThrottlerBehindProxyGuard)
   async verifyCode(@Body() { email, code }: VerifyCodeDto): Promise<void> {
     const isValid = await this.authService.validateVerificationCode(
       email,
@@ -116,6 +122,7 @@ export class AuthController {
   })
   @Post('refresh-token')
   @HttpCode(HttpStatus.OK)
+  @UseGuards(ThrottlerBehindProxyGuard)
   async refreshToken(
     @Body() { refreshToken }: RefreshTokenDto,
   ): Promise<LoginResponse> {
@@ -138,6 +145,7 @@ export class AuthController {
   })
   @HttpCode(HttpStatus.OK)
   @Post('forgot-password')
+  @UseGuards(ThrottlerBehindProxyGuard)
   async forgotPassword(@Body() { email }: SendCodeDto): Promise<void> {
     await this.authService.sendPasswordResetToken(email);
   }
@@ -153,6 +161,7 @@ export class AuthController {
   })
   @HttpCode(HttpStatus.OK)
   @Post('reset-password')
+  @UseGuards(ThrottlerBehindProxyGuard)
   async resetPassword(
     @Body() { email, token, newPassword }: ResetPasswordDto,
   ): Promise<void> {

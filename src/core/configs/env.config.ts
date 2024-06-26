@@ -5,6 +5,7 @@ import {
   DatabaseConfigs,
   EmailConfigs,
   RedisConfigs,
+  ThrottlerConfigs,
 } from '../types';
 
 const common = registerAs<CommonConfigs>('common', () => ({
@@ -25,6 +26,11 @@ const database = registerAs<DatabaseConfigs>('db', () => ({
 const redis = registerAs<RedisConfigs>('redis', () => ({
   host: process.env.REDIS_HOST,
   port: +process.env.REDIS_PORT,
+}));
+
+const throttler = registerAs<ThrottlerConfigs>('throttler', () => ({
+  ttl: +process.env.THROTTLE_TTL,
+  limit: +process.env.THROTTLE_LIMIT,
 }));
 
 const email = registerAs<EmailConfigs>('email', () => ({
@@ -52,5 +58,5 @@ export const EnvConfig: ConfigModuleOptions = {
     EMAIL_HOST: Joi.string().required(),
     EMAIL_PORT: Joi.number().required(),
   }),
-  load: [common, database, redis, email],
+  load: [common, database, redis, throttler, email],
 };

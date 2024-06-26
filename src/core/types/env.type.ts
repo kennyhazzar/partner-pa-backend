@@ -24,3 +24,8 @@ export class EmailConfigs {
   user: string;
   pass: string;
 }
+
+export class ThrottlerConfigs {
+  ttl: number;
+  limit: number;
+}
