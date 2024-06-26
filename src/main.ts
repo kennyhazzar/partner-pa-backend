@@ -4,9 +4,10 @@ import { ConfigService } from '@nestjs/config';
 import { CommonConfigs } from '@core/types';
 import { ValidationPipe } from '@nestjs/common';
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
+import { NestExpressApplication } from '@nestjs/platform-express';
 
 async function bootstrap() {
-  const app = await NestFactory.create(AppModule);
+  const app = await NestFactory.create<NestExpressApplication>(AppModule);
 
   const { port } = app.get(ConfigService).get<CommonConfigs>('common');
 
@@ -15,6 +16,8 @@ async function bootstrap() {
   const config = new DocumentBuilder().setTitle('Partner').build();
   const document = SwaggerModule.createDocument(app, config);
   SwaggerModule.setup('docs', app, document);
+
+  app.disable('x-powered-by', 'X-Powered-By');
 
   await app.listen(port, async () =>
     console.log(`app was running on ${await app.getUrl()}`),
