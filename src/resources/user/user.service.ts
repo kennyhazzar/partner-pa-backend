@@ -86,6 +86,23 @@ export class UserService {
     this.cacheManager.set(`user_${email}`, newUser);
   }
 
+  async updatePassword(email: string, newPassword: string): Promise<void> {
+    const user = await this.userRepository.findOne({ where: { email } });
+
+    if (!user) {
+      throw new BadRequestException('Пользователь не найден');
+    }
+
+    const hashedPassword = await bcrypt.hash(newPassword, 10);
+
+    const newUser = await this.userRepository.save({
+      ...user,
+      password: hashedPassword,
+    });
+
+    this.cacheManager.set(`user_${email}`, newUser);
+  }
+
   async deleteByEmail(email: string): Promise<void> {
     const user = await this.findOneByEmail(email);
 

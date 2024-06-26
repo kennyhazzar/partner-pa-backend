@@ -13,6 +13,7 @@ import {
   LoginResponse,
   RefreshTokenDto,
   RegisterDto,
+  ResetPasswordDto,
   SendCodeDto,
   VerifyCodeDto,
 } from './dto';
@@ -34,6 +35,7 @@ export class AuthController {
     required: true,
   })
   @Post('register')
+  @HttpCode(HttpStatus.OK)
   async register(
     @Body() { email, password, firstName }: RegisterDto,
   ): Promise<void> {
@@ -51,6 +53,7 @@ export class AuthController {
     required: true,
   })
   @Post('login')
+  @HttpCode(HttpStatus.OK)
   async login(@Body() { email, password }: LoginDto): Promise<LoginResponse> {
     return this.authService.login(email, password);
   }
@@ -78,15 +81,16 @@ export class AuthController {
     await this.authService.sendVerificationCode(email);
   }
 
-  @Post('verify-code')
-  @HttpCode(HttpStatus.OK)
   @ApiOperation({
     summary: 'Метод для верификации кода',
   })
   @ApiBody({
-    description: 'Почта и код для верификации',
+    description:
+      'Почта и код для верификации. При NODE_ENV нужно отправить код равный "000000"',
     type: VerifyCodeDto,
   })
+  @Post('verify-code')
+  @HttpCode(HttpStatus.OK)
   async verifyCode(@Body() { email, code }: VerifyCodeDto): Promise<void> {
     const isValid = await this.authService.validateVerificationCode(
       email,
@@ -97,8 +101,6 @@ export class AuthController {
     }
   }
 
-  @Post('refresh-token')
-  @HttpCode(HttpStatus.OK)
   @ApiOperation({
     summary: 'Обновление токенов',
     description: 'Обновление как accessToken, так и refreshToken',
@@ -112,6 +114,8 @@ export class AuthController {
     description: 'Тело ответа с парой новых токенов accessToken и refreshToken',
     type: LoginResponse,
   })
+  @Post('refresh-token')
+  @HttpCode(HttpStatus.OK)
   async refreshToken(
     @Body() { refreshToken }: RefreshTokenDto,
   ): Promise<LoginResponse> {
@@ -120,5 +124,38 @@ export class AuthController {
     } catch (e) {
       throw new UnauthorizedException(e.message);
     }
+  }
+
+  @ApiOperation({
+    summary: 'Метод для сброса пароля',
+    description:
+      'На почту должен прийти токен, в метод (auth/reset-password) следует передать новый пароль и токен сброса пароля',
+  })
+  @ApiBody({
+    description: 'Для сброса нужна только электронная почта пользователя',
+    type: SendCodeDto,
+    required: true,
+  })
+  @HttpCode(HttpStatus.OK)
+  @Post('forgot-password')
+  async forgotPassword(@Body() { email }: SendCodeDto): Promise<void> {
+    await this.authService.sendPasswordResetToken(email);
+  }
+
+  @ApiOperation({
+    summary: 'Метод для выполнения сброса пароля',
+    description: 'Устанавливает новый пароль если токен сброса валиден',
+  })
+  @ApiBody({
+    description:
+      'Для выполнения сброса пароля требуется передать новый пароль, токен, полученный на почту, а также почту пользователя. При NODE_ENV нужно отправить токен равный "token"',
+    type: ResetPasswordDto,
+  })
+  @HttpCode(HttpStatus.OK)
+  @Post('reset-password')
+  async resetPassword(
+    @Body() { email, token, newPassword }: ResetPasswordDto,
+  ): Promise<void> {
+    await this.authService.resetPassword(email, token, newPassword);
   }
 }
