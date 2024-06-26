@@ -57,10 +57,7 @@ export class UserController {
   @ApiBearerAuth()
   @Put()
   @UseGuards(AuthGuard)
-  async update(
-    @Req() req: UserRequestContext,
-    @Body() payload: ProfileDto,
-  ) {
+  async update(@Req() req: UserRequestContext, @Body() payload: ProfileDto) {
     return this.userService.updateProfile(req.user, payload);
   }
 

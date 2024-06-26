@@ -9,8 +9,10 @@ import {
 } from '@nestjs/common';
 import { AuthService } from './auth.service';
 import {
+  LoginDto,
   LoginResponse,
   RefreshTokenDto,
+  RegisterDto,
   SendCodeDto,
   VerifyCodeDto,
 } from './dto';
@@ -22,7 +24,41 @@ export class AuthController {
   constructor(private readonly authService: AuthService) {}
 
   @ApiOperation({
+    summary: 'Регистрация пользователя',
+    description:
+      'Для первой авторизации пользователю нужно подтвердить почту (auth/verify-code). Если код оказался неактуальным, следует отправить запрос (auth/send-code) для получения нового кода',
+  })
+  @ApiBody({
+    description: 'Базовые поля для регистрации',
+    type: RegisterDto,
+    required: true,
+  })
+  @Post('register')
+  async register(
+    @Body() { email, password, firstName }: RegisterDto,
+  ): Promise<void> {
+    await this.authService.register(email, password, firstName);
+  }
+
+  @ApiOperation({
+    summary: 'Авторизация пользователя',
+    description:
+      'Перед тем, как авторизоваться в первый раз, пользователю нужно подтвердить почту (auth/verify-code). Если код оказался неактуальным, следует отправить запрос (auth/send-code) для получения нового кода',
+  })
+  @ApiBody({
+    description: 'Базовые поля для авторизации',
+    type: LoginDto,
+    required: true,
+  })
+  @Post('login')
+  async login(@Body() { email, password }: LoginDto): Promise<LoginResponse> {
+    return this.authService.login(email, password);
+  }
+
+  @ApiOperation({
     summary: 'Отправка кода для верификации почты',
+    description:
+      'Метод для повторного получения кода. При регистрации (auth/register) код отправляется автоматически',
   })
   @ApiBody({
     description: 'Тело запроса для отправки кода',
@@ -51,23 +87,14 @@ export class AuthController {
     description: 'Почта и код для верификации',
     type: VerifyCodeDto,
   })
-  @ApiResponse({
-    status: HttpStatus.OK,
-    description:
-      'Верификация пройдена успешно, возвращается пара токенов для доступа',
-    type: LoginResponse,
-  })
-  async verifyCode(
-    @Body() { email, code }: VerifyCodeDto,
-  ): Promise<LoginResponse> {
+  async verifyCode(@Body() { email, code }: VerifyCodeDto): Promise<void> {
     const isValid = await this.authService.validateVerificationCode(
       email,
       code,
     );
     if (!isValid) {
-      throw new BadRequestException('Invalid verification code');
+      throw new BadRequestException('Неверный код подтверждения');
     }
-    return this.authService.login(email);
   }
 
   @Post('refresh-token')

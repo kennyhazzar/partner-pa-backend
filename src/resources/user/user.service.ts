@@ -7,6 +7,7 @@ import { CACHE_MANAGER } from '@nestjs/cache-manager';
 import { getRandomCode } from '@core/utils';
 import { ALPHABET } from '@core/constants';
 import { ProfileDto } from './dto';
+import * as bcrypt from 'bcrypt';
 
 @Injectable()
 export class UserService {
@@ -17,7 +18,10 @@ export class UserService {
     @Inject(CACHE_MANAGER) private cacheManager: Cache,
   ) {}
 
-  async findOneByEmail(email: string, select?: FindOptionsSelect<User>): Promise<User | undefined> {
+  async findOneByEmail(
+    email: string,
+    select?: FindOptionsSelect<User>,
+  ): Promise<User | undefined> {
     const cacheKey = `user_${email}`;
 
     let user = await this.cacheManager.get<User>(cacheKey);
@@ -26,7 +30,7 @@ export class UserService {
       const options: FindOneOptions<User> = {
         where: { email, isDeleted: false },
       };
-  
+
       if (select) {
         options.select = select;
       }
@@ -41,7 +45,11 @@ export class UserService {
     return user;
   }
 
-  async create(email: string): Promise<User> {
+  async create(
+    email: string,
+    password: string,
+    firstName: string,
+  ): Promise<User> {
     const isUserExist = await this.findOneByEmail(email);
 
     if (isUserExist) {
@@ -50,11 +58,32 @@ export class UserService {
       );
     }
 
-    const newUser = this.userRepository.create({ email });
+    const hashedPassword = await bcrypt.hash(password, 10);
+
+    const newUser = this.userRepository.create({
+      email,
+      password: hashedPassword,
+      firstName,
+    });
 
     this.cacheManager.set(`user_${email}`, newUser);
 
     return this.userRepository.save(newUser);
+  }
+
+  async confirmEmail(email: string): Promise<void> {
+    const user = await this.userRepository.findOne({ where: { email } });
+
+    if (!user) {
+      throw new BadRequestException('Пользователь не найден');
+    }
+
+    const newUser = await this.userRepository.save({
+      ...user,
+      isEmailConfirmed: true,
+    });
+
+    this.cacheManager.set(`user_${email}`, newUser);
   }
 
   async deleteByEmail(email: string): Promise<void> {
@@ -75,8 +104,10 @@ export class UserService {
 
   async updateProfile(user: User, payload: ProfileDto): Promise<ProfileDto> {
     await this.userRepository.update(user.id, payload);
-    
-    const updateUser = await this.userRepository.findOne({ where: { id: user.id } });
+
+    const updateUser = await this.userRepository.findOne({
+      where: { id: user.id },
+    });
     this.cacheManager.set(`user_${user.email}`, updateUser);
 
     return {
@@ -86,7 +117,7 @@ export class UserService {
       firstName: updateUser.firstName,
       secondName: updateUser.secondName,
       lastName: updateUser.lastName,
-    }
+    };
   }
 
   async createRefreshToken(user: User): Promise<RefreshToken> {
