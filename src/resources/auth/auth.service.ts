@@ -98,7 +98,6 @@ export class AuthService {
 
   async login(email: string, password: string): Promise<LoginResponse> {
     const user = await this.usersService.findOneByEmail(email);
-
     if (!user || !(await bcrypt.compare(password, user.password))) {
       throw new UnauthorizedException('Неверный пароль');
     }
