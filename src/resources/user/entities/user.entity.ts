@@ -7,8 +7,11 @@ import { Partner } from '@resources/partners/entities';
 
 @Entity()
 export class User extends PrimaryUuidBaseEntity {
-  @Column({ unique: true, nullable: true })
+  @Column({ unique: true })
   email: string;
+
+  @Column()
+  password: string;
 
   @Column({ unique: true, nullable: true })
   phone: string;
@@ -35,7 +38,7 @@ export class User extends PrimaryUuidBaseEntity {
   role: UserRole;
 
   @Column({ default: false })
-  isEmailChecked: boolean;
+  isEmailConfirmed: boolean;
 
   @Column({ default: false })
   isDeleted: boolean;
