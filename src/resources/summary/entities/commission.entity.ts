@@ -1,15 +1,16 @@
-import { Column, Entity, ManyToOne } from 'typeorm';
+import { Column, Entity, JoinColumn, ManyToOne } from 'typeorm';
 import { PrimaryUuidBaseEntity } from '@core/db';
-import { Partner } from '@resources/partners/entities';
+import { Partner } from './partner.entity';
 
 @Entity({ comment: 'Комиссии предприятий и менеджеров' })
 export class Commission extends PrimaryUuidBaseEntity {
-  @Column()
+  @Column({ name: 'enterprise_commission' })
   enterpriseCommission: number;
 
-  @Column()
+  @Column({ name: 'manager_commission' })
   managerCommission: number;
 
   @ManyToOne(() => Partner, (partner) => partner.commissions)
+  @JoinColumn()
   partner: Partner;
 }

@@ -4,9 +4,8 @@ import { EnvConfig, ThrottlerConfig, TypeormConfig } from '@core/configs';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { UserModule } from './user/user.module';
 import { AuthModule } from './auth/auth.module';
-import { ObjectsModule } from './objects/objects.module';
-import { PartnersModule } from './partners/partners.module';
 import { ThrottlerModule } from '@nestjs/throttler';
+import { SummaryModule } from './summary/summary.module';
 
 @Module({
   imports: [
@@ -15,8 +14,7 @@ import { ThrottlerModule } from '@nestjs/throttler';
     ThrottlerModule.forRootAsync(ThrottlerConfig),
     UserModule,
     AuthModule,
-    ObjectsModule,
-    PartnersModule,
+    SummaryModule,
   ],
 })
 export class AppModule {}
