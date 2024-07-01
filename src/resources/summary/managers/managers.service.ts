@@ -6,10 +6,12 @@ import { UserService } from '@resources/user/user.service';
 import { getRandomCode } from '@core/utils';
 import { ALPHABET } from '@core/constants';
 import { ManagerDto } from '../dto/manager.dto';
+import { AuthService } from '@resources/auth/auth.service';
 
 @Injectable()
 export class ManagersService {
   constructor(
+    private readonly authService: AuthService,
     private readonly usersService: UserService,
     @InjectRepository(Manager)
     private readonly managersRepository: Repository<Manager>,
@@ -31,14 +33,16 @@ export class ManagersService {
       entity.partner = { id: payload.partnerId } as Partner;
     }
 
-    const newManager = this.managersRepository.create({
-      ...payload,
-      partner: {
-        id: payload.partnerId,
-      },
-    });
+    const newManager = this.managersRepository.create(entity);
 
-    return this.managersRepository.save(newManager);
+    const manager = await this.managersRepository.save(newManager);
+
+    await Promise.allSettled([
+      this.authService.sendVerificationCode(newUser.email),
+      this.usersService.updateProfile(newUser, { managerId: manager.id }),
+    ]);
+
+    return { ...this.managersRepository.save(newManager), password };
   }
   async update(id: string, payload: ManagerDto) {
     return this.managersRepository.update(id, payload);

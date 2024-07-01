@@ -7,7 +7,7 @@ import { RefreshToken } from './entities';
 import { CacheConfig } from '@core/configs';
 import { RedisClientOptions } from 'redis';
 import { CacheModule } from '@nestjs/cache-manager';
-import { AuthModule } from '../auth/auth.module';
+import { EntityService } from '@core/services';
 
 @Module({
   imports: [
@@ -15,7 +15,7 @@ import { AuthModule } from '../auth/auth.module';
     CacheModule.registerAsync<RedisClientOptions>(CacheConfig),
   ],
   controllers: [UserController],
-  providers: [UserService],
+  providers: [UserService, EntityService],
   exports: [UserService],
 })
 export class UserModule {}

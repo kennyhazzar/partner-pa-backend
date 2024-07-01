@@ -10,9 +10,11 @@ import { ManagersService } from './managers/managers.service';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { LicensedObject, Manager, Requisites } from './entities';
 import { UserModule } from '../user/user.module';
+import { AuthModule } from '../auth/auth.module';
 
 @Module({
   imports: [
+    AuthModule,
     UserModule,
     TypeOrmModule.forFeature([Manager, LicensedObject, Requisites]),
   ],

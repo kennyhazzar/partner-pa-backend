@@ -28,7 +28,8 @@ export class ObjectsService {
   ) {}
 
   async create(payload: CreateObjectDto) {
-    const { requisites, title } = payload;
+    const { title } = payload;
+    const requisites = payload?.requisites;
 
     const licensedObject = new LicensedObject();
     licensedObject.title = title;
@@ -47,21 +48,21 @@ export class ObjectsService {
       licensedObject.account = { id: payload?.accountId } as Account;
     }
 
-    await this.objectsRepository.save(licensedObject);
+    if (requisites) {
+      licensedObject.requisites = await Promise.all(
+        requisites.map(async (requisitesDto) => {
+          const requisitesEntity =
+            this.requisitesRepository.create(requisitesDto);
+          await this.requisitesRepository.save(requisitesEntity);
 
-    licensedObject.requisites = await Promise.all(
-      requisites.map(async (requisitesDto) => {
-        const requisitesEntity =
-          this.requisitesRepository.create(requisitesDto);
-        await this.requisitesRepository.save(requisitesEntity);
+          const entityRequisites = new EntityRequisites();
+          entityRequisites.requisites = requisitesEntity;
+          entityRequisites.object = licensedObject;
 
-        const entityRequisites = new EntityRequisites();
-        entityRequisites.requisites = requisitesEntity;
-        entityRequisites.object = licensedObject;
-
-        return this.entityRequisitesRepository.save(entityRequisites);
-      }),
-    );
+          return this.entityRequisitesRepository.save(entityRequisites);
+        }),
+      );
+    }
 
     return this.objectsRepository.save(licensedObject);
   }
