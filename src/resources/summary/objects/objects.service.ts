@@ -8,11 +8,7 @@ import {
   Partner,
   EntityRequisites,
 } from '../entities';
-import {
-  DeepPartial,
-  FindManyOptions,
-  Repository,
-} from 'typeorm';
+import { DeepPartial, FindManyOptions, Repository } from 'typeorm';
 import {
   CreateObjectDto,
   FindObjectsQuery,
@@ -71,7 +67,11 @@ export class ObjectsService {
       );
     }
 
-    return this.objectsRepository.save(licensedObject);
+    const result = await this.objectsRepository.save(licensedObject);
+
+    return {
+      objectId: result.id,
+    };
   }
 
   async find(payload: FindObjectsQuery, take: number = 10, skip: number = 0) {
@@ -90,41 +90,37 @@ export class ObjectsService {
   async findOne(payload: FindOneObjectQuery) {
     const options: FindManyOptions<LicensedObject> = {
       where: { id: payload.id },
-      relations: { requisites: { requisites: true } },
+      relations: { requisites: { requisites: true }, manager: true },
     };
 
     const newOptions = this.getRelationsOptions(payload, options);
 
-    return await this.entityService.findOne<LicensedObject>(
-      {
-        repository: this.objectsRepository,
-        select: fullFindOptionsObjectSelect,
-        cacheValue: payload.id,
-        relations: newOptions.relations,
-        where: newOptions.where,
-      }
-    );
+    return await this.entityService.findOne<LicensedObject>({
+      repository: this.objectsRepository,
+      select: fullFindOptionsObjectSelect,
+      cacheValue: payload.id,
+      relations: newOptions.relations,
+      where: newOptions.where,
+    });
   }
 
   async update(id: string, payload: UpdateObjectDto) {
-    const object = await this.entityService.findOne<LicensedObject>(
-      {
-        repository: this.objectsRepository,
-        select: fullFindOptionsObjectSelect,
-        cacheValue: id,
-        relations: {
-          requisites: {
-            requisites: true,
-          },
-          account: true,
-          manager: true,
-          partner: true,
+    const object = await this.entityService.findOne<LicensedObject>({
+      repository: this.objectsRepository,
+      select: fullFindOptionsObjectSelect,
+      cacheValue: id,
+      relations: {
+        requisites: {
+          requisites: true,
         },
-        where: {
-          id,
-        },
+        account: true,
+        manager: true,
+        partner: true,
       },
-    );
+      where: {
+        id,
+      },
+    });
 
     if (!object) {
       throw new BadRequestException('Объект не найден');
@@ -180,7 +176,7 @@ export class ObjectsService {
     if (payload?.managerId) {
       newOptions.where = {
         ...newOptions.where,
-        account: { id: payload.managerId },
+        manager: { id: payload.managerId },
       };
       newOptions.relations = { ...newOptions.relations, manager: true };
     }
@@ -188,7 +184,7 @@ export class ObjectsService {
     if (payload?.partnerId) {
       newOptions.where = {
         ...newOptions.where,
-        account: { id: payload.partnerId },
+        partner: { id: payload.partnerId },
       };
       newOptions.relations = { ...newOptions.relations, partner: true };
     }

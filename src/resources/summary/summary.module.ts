@@ -8,27 +8,49 @@ import { AccountsService } from './accounts/accounts.service';
 import { ManagersController } from './managers/managers.controller';
 import { ManagersService } from './managers/managers.service';
 import { TypeOrmModule } from '@nestjs/typeorm';
-import { LicensedObject, Manager, Requisites } from './entities';
+import {
+  EntityRequisites,
+  LicensedObject,
+  Manager,
+  Partner,
+  Requisites,
+} from './entities';
 import { UserModule } from '../user/user.module';
 import { AuthModule } from '../auth/auth.module';
+import { ObjectsService } from './objects/objects.service';
+import { ObjectsController } from './objects/objects.controller';
+import { EntityService } from '@core/services';
+import { CacheModule } from '@nestjs/cache-manager';
+import { RedisClientOptions } from 'redis';
+import { CacheConfig } from '@core/configs';
 
 @Module({
   imports: [
     AuthModule,
     UserModule,
-    TypeOrmModule.forFeature([Manager, LicensedObject, Requisites]),
+    TypeOrmModule.forFeature([
+      Manager,
+      LicensedObject,
+      Requisites,
+      EntityRequisites,
+      Partner,
+    ]),
+    CacheModule.registerAsync<RedisClientOptions>(CacheConfig),
   ],
   controllers: [
     ProductsController,
     PartnersController,
     AccountsController,
     ManagersController,
+    ObjectsController,
   ],
   providers: [
+    EntityService,
     ProductsService,
     PartnersService,
     AccountsService,
     ManagersService,
+    ObjectsService,
   ],
 })
 export class SummaryModule {}

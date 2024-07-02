@@ -22,25 +22,32 @@ export class LicensedObject extends PrimaryUuidBaseEntity {
 
   @ManyToOne(() => Partner, (partner) => partner.licensedObjects, {
     nullable: true,
+    onDelete: 'SET NULL',
   })
   @JoinColumn()
   partner: Partner;
 
   @ManyToOne(() => Manager, (manager) => manager.licensedObjects, {
     nullable: true,
+    onDelete: 'SET NULL',
   })
   @JoinColumn()
   manager: Manager;
 
   @ManyToOne(() => Account, (account) => account.licensedObjects, {
     nullable: true,
+    onDelete: 'SET NULL',
   })
   @JoinColumn()
   account: Account;
 
-  @OneToMany(() => Bill, (bill) => bill.licensedObject)
+  @OneToMany(() => Bill, (bill) => bill.licensedObject, {
+    onDelete: 'SET NULL',
+  })
   licensedDocuments: Bill[];
 
-  @OneToMany(() => EntityRequisites, (requisites) => requisites.object)
+  @OneToMany(() => EntityRequisites, (requisites) => requisites.object, {
+    onDelete: 'SET NULL',
+  })
   requisites: EntityRequisites[];
 }

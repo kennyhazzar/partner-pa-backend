@@ -13,18 +13,21 @@ export class EntityRequisites extends PrimaryUuidBaseEntity {
 
   @ManyToOne(() => LicensedObject, (object) => object.requisites, {
     nullable: true,
+    onDelete: 'SET NULL',
   })
   @JoinColumn()
   object?: LicensedObject;
 
   @ManyToOne(() => Partner, (partner) => partner.requisites, {
     nullable: true,
+    onDelete: 'SET NULL',
   })
   @JoinColumn()
   partner?: Partner;
 
   @ManyToOne(() => Account, (account) => account.requisites, {
     nullable: true,
+    onDelete: 'SET NULL',
   })
   @JoinColumn()
   account?: Account;

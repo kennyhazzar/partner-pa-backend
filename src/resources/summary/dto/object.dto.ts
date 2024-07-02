@@ -2,6 +2,7 @@ import { ApiProperty } from '@nestjs/swagger';
 import { Type } from 'class-transformer';
 import {
   ArrayMinSize,
+  IsArray,
   IsDate,
   IsNotEmpty,
   IsNotEmptyObject,
@@ -50,6 +51,7 @@ export class CreateObjectDto extends ObjectsRelationsDto {
   @ValidateNested({ each: true })
   @ArrayMinSize(1)
   @Type(() => CreateRequisitesDto)
+  @IsArray()
   @IsOptional()
   requisites: CreateRequisitesDto[];
 
@@ -135,6 +137,10 @@ export const fullFindOptionsObjectSelect: FindOptionsSelect<LicensedObject> = {
   },
   manager: {
     id: true,
+    firstName: true,
+    secondName: true,
+    lastName: true,
+    fullName: true,
   },
   createdAt: true,
   updatedAt: true,

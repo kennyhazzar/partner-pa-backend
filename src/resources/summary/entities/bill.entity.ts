@@ -32,11 +32,15 @@ export class Bill extends PrimaryUuidBaseEntity {
   @ManyToOne(
     () => LicensedObject,
     (licensedObject) => licensedObject.licensedDocuments,
+    { onDelete: 'SET NULL' },
   )
   @JoinColumn()
   licensedObject: LicensedObject;
 
-  @ManyToOne(() => Manager, (manager) => manager.bills, { nullable: true })
+  @ManyToOne(() => Manager, (manager) => manager.bills, {
+    nullable: true,
+    onDelete: 'SET NULL',
+  })
   @JoinColumn()
   manager: Manager;
 }

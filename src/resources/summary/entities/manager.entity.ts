@@ -28,7 +28,7 @@ export class Manager extends PrimaryUuidBaseEntity {
   @Column({ name: 'full_name', nullable: true })
   fullName?: string;
 
-  @OneToOne(() => User, { nullable: true })
+  @OneToOne(() => User, { nullable: true, onDelete: 'CASCADE' })
   @JoinColumn()
   userAccount?: User;
 
@@ -39,13 +39,22 @@ export class Manager extends PrimaryUuidBaseEntity {
   @JoinColumn()
   partner?: Partner;
 
-  @OneToMany(() => Account, (account) => account.manager)
+  @OneToMany(() => Account, (account) => account.manager, {
+    nullable: true,
+    onDelete: 'SET NULL',
+  })
   accounts?: Account;
 
-  @OneToMany(() => LicensedObject, (object) => object.manager)
+  @OneToMany(() => LicensedObject, (object) => object.manager, {
+    nullable: true,
+    onDelete: 'SET NULL',
+  })
   licensedObjects?: LicensedObject[];
 
-  @OneToMany(() => EntityRequisites, (requisites) => requisites.object)
+  @OneToMany(() => EntityRequisites, (requisites) => requisites.object, {
+    nullable: true,
+    onDelete: 'SET NULL',
+  })
   requisites?: EntityRequisites[];
 
   @OneToMany(() => Bill, (bill) => bill.manager)

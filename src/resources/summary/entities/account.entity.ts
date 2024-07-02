@@ -7,17 +7,29 @@ import { Manager } from './manager.entity';
 
 @Entity()
 export class Account extends PrimaryUuidBaseEntity {
-  @OneToMany(() => EntityRequisites, (requisites) => requisites.account)
+  @OneToMany(() => EntityRequisites, (requisites) => requisites.account, {
+    nullable: true,
+    onDelete: 'SET NULL',
+  })
   requisites: EntityRequisites[];
 
-  @OneToMany(() => LicensedObject, (object) => object.account)
+  @OneToMany(() => LicensedObject, (object) => object.account, {
+    nullable: true,
+    onDelete: 'SET NULL',
+  })
   licensedObjects: LicensedObject[];
 
-  @ManyToOne(() => Manager, (manager) => manager.accounts)
+  @ManyToOne(() => Manager, (manager) => manager.accounts, {
+    nullable: true,
+    onDelete: 'SET NULL',
+  })
   @JoinColumn()
   manager: Manager;
 
-  @ManyToOne(() => Partner, (partner) => partner.accounts)
+  @ManyToOne(() => Partner, (partner) => partner.accounts, {
+    nullable: true,
+    onDelete: 'SET NULL',
+  })
   @JoinColumn()
   partner: Partner;
 }

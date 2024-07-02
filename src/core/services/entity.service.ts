@@ -1,11 +1,17 @@
 import { Injectable, Inject } from '@nestjs/common';
 import { Cache } from 'cache-manager';
-import { FindOneOptions, FindOptionsRelationByString, FindOptionsRelations, FindOptionsWhere, Repository } from 'typeorm';
+import {
+  FindOneOptions,
+  FindOptionsRelationByString,
+  FindOptionsRelations,
+  FindOptionsWhere,
+  Repository,
+} from 'typeorm';
 
 export interface FindOneParams<T, U = T> {
   cacheValue: string;
   repository: Repository<T>;
-  ttl?: number,
+  ttl?: number;
   select?: FindOneOptions<T>['select'];
   relations?: FindOptionsRelations<T> | FindOptionsRelationByString;
   where?: FindOptionsWhere<T>[] | FindOptionsWhere<T>;
@@ -19,7 +25,7 @@ export class EntityService {
   async findOne<T, U = T>({
     cacheValue,
     repository,
-    ttl = 3600000,
+    ttl = 3600,
     select,
     relations,
     where,
@@ -51,7 +57,7 @@ export class EntityService {
           : (entity as unknown as U);
 
         if (cacheKey) {
-          await this.cacheManager.set(cacheKey, entity, ttl);
+          await this.cacheManager.set(cacheKey, entity, { ttl } as any);
         }
 
         return transformedEntity;

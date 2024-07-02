@@ -3,7 +3,6 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { RefreshToken, User } from './entities';
 import {
   DeepPartial,
-  FindOneOptions,
   FindOptionsSelect,
   FindOptionsWhere,
   Repository,
@@ -36,25 +35,22 @@ export class UserService {
     select?: FindOptionsSelect<User>,
     transform?: (entity: User) => User,
   ): Promise<User | undefined> {
-    return this.entityService.findOne<User>(
-      {
-        repository: this.userRepository,
-        select,
-        cacheValue: where?.id as string,
-        relations: {
-          managerAccount: {
-            accounts: true,
-            licensedObjects: { partner: true, requisites: true },
-          },
+    return this.entityService.findOne<User>({
+      repository: this.userRepository,
+      select,
+      cacheValue: where?.id as string,
+      relations: {
+        managerAccount: {
+          accounts: true,
+          licensedObjects: { partner: true, requisites: true },
         },
-        where: {
-          ...where,
-          isDeleted: false,
-        },
-        ttl: 3600000,
-        transform,
       },
-    );
+      where: {
+        ...where,
+        isDeleted: false,
+      },
+      transform,
+    });
   }
 
   async create(
@@ -185,15 +181,13 @@ export class UserService {
   }
 
   async getRefreshToken(token: string): Promise<RefreshToken> {
-    return this.entityService.findOne<RefreshToken>(
-      {
-        repository: this.refreshTokenRepository,
-        select: { id: true, expiresAt: true, user: fullFindOptionsUserSelect },
-        cacheValue: token,
-        relations: { user: true },
-        where: { token },
-      },
-    );
+    return this.entityService.findOne<RefreshToken>({
+      repository: this.refreshTokenRepository,
+      select: { id: true, expiresAt: true, user: fullFindOptionsUserSelect },
+      cacheValue: token,
+      relations: { user: true },
+      where: { token },
+    });
   }
 
   async deleteRefreshToken(token: string): Promise<void> {
