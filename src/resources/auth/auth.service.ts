@@ -46,12 +46,10 @@ export class AuthService {
   }
 
   async sendVerificationCode(email: string): Promise<void> {
-    console.log(email);
-
     const user = await this.usersService.findOne({ email });
 
     if (!user) {
-      throw new BadRequestException('Email not found');
+      throw new BadRequestException('Почта не найдена');
     }
 
     const code =

@@ -12,7 +12,12 @@ import { Cache } from 'cache-manager';
 import { CACHE_MANAGER } from '@nestjs/cache-manager';
 import { getRandomCode } from '@core/utils';
 import { ALPHABET } from '@core/constants';
-import { fullFindOptionsUserSelect, ProfileDto, UpdateProfileDto, UserFindOneWhere } from './dto';
+import {
+  fullFindOptionsUserSelect,
+  ProfileDto,
+  UpdateProfileDto,
+  UserFindOneWhere,
+} from './dto';
 import * as bcrypt from 'bcrypt';
 import { EntityService } from '@core/services';
 
@@ -32,21 +37,23 @@ export class UserService {
     transform?: (entity: User) => User,
   ): Promise<User | undefined> {
     return this.entityService.findOne<User>(
-      this.userRepository,
-      select,
-      where?.id as string,
       {
-        managerAccount: {
-          accounts: true,
-          licensedObjects: { partner: true, requisites: true },
+        repository: this.userRepository,
+        select,
+        cacheValue: where?.id as string,
+        relations: {
+          managerAccount: {
+            accounts: true,
+            licensedObjects: { partner: true, requisites: true },
+          },
         },
+        where: {
+          ...where,
+          isDeleted: false,
+        },
+        ttl: 3600000,
+        transform,
       },
-      {
-        ...where,
-        isDeleted: false,
-      },
-      3600000,
-      transform,
     );
   }
 
@@ -179,10 +186,13 @@ export class UserService {
 
   async getRefreshToken(token: string): Promise<RefreshToken> {
     return this.entityService.findOne<RefreshToken>(
-      this.refreshTokenRepository,
-      { id: true, expiresAt: true, user: fullFindOptionsUserSelect },
-      token,
-      { user: true },
+      {
+        repository: this.refreshTokenRepository,
+        select: { id: true, expiresAt: true, user: fullFindOptionsUserSelect },
+        cacheValue: token,
+        relations: { user: true },
+        where: { token },
+      },
     );
   }
 

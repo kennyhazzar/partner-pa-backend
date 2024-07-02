@@ -10,7 +10,11 @@ import {
 } from '@nestjs/common';
 import { UserService } from './user.service';
 import { AuthGuard } from '@resources/auth/guards';
-import { fullFindOptionsUserSelect, UpdateProfileDto, UserRequestContext } from './dto';
+import {
+  fullFindOptionsUserSelect,
+  UpdateProfileDto,
+  UserRequestContext,
+} from './dto';
 import {
   ApiBearerAuth,
   ApiOperation,
@@ -39,15 +43,16 @@ export class UserController {
     return this.userService.findOne(
       { id: req.user.id },
       fullFindOptionsUserSelect,
-      (user) => ({
-        id: user.id,
-        email: user.email,
-        phone: user.phone,
-        itn: user.itn,
-        firstName: user.firstName,
-        secondName: user.secondName,
-        lastName: user.lastName,
-      } as unknown as User)
+      (user) =>
+        ({
+          id: user.id,
+          email: user.email,
+          phone: user.phone,
+          itn: user.itn,
+          firstName: user.firstName,
+          secondName: user.secondName,
+          lastName: user.lastName,
+        }) as unknown as User,
     );
   }
 
@@ -61,7 +66,10 @@ export class UserController {
   })
   @Put()
   @UseGuards(AuthGuard)
-  async update(@Req() req: UserRequestContext, @Body() payload: UpdateProfileDto) {
+  async update(
+    @Req() req: UserRequestContext,
+    @Body() payload: UpdateProfileDto,
+  ) {
     return this.userService.updateProfile({ id: req.user.id }, payload);
   }
 

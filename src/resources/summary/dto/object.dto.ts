@@ -16,6 +16,8 @@ import {
   CreateRequisitesDto,
   UpdateRequisitesDto,
 } from './create-requisites.dto';
+import { FindOptionsSelect } from 'typeorm';
+import { LicensedObject } from '../entities';
 
 export class ObjectsRelationsDto {
   @ApiProperty()
@@ -111,3 +113,29 @@ export class FindOneObjectQuery extends ObjectsRelationsDto {
   @IsUUID()
   id: string;
 }
+
+export const fullFindOptionsObjectSelect: FindOptionsSelect<LicensedObject> = {
+  id: true,
+  account: {
+    id: true,
+  },
+  title: true,
+  phone: true,
+  email: true,
+  dateOfEstablishment: true,
+  requisites: {
+    id: true,
+    requisites: {
+      id: true,
+      address: true,
+      inn: true,
+      kpp: true,
+      companyName: true,
+    },
+  },
+  manager: {
+    id: true,
+  },
+  createdAt: true,
+  updatedAt: true,
+};

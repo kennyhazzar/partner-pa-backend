@@ -8,13 +8,19 @@ import {
   Partner,
   EntityRequisites,
 } from '../entities';
-import { DeepPartial, FindManyOptions, Repository } from 'typeorm';
+import {
+  DeepPartial,
+  FindManyOptions,
+  Repository,
+} from 'typeorm';
 import {
   CreateObjectDto,
   FindObjectsQuery,
   FindOneObjectQuery,
+  fullFindOptionsObjectSelect,
   UpdateObjectDto,
 } from '../dto/object.dto';
+import { EntityService } from '@core/services';
 
 @Injectable()
 export class ObjectsService {
@@ -25,6 +31,7 @@ export class ObjectsService {
     private readonly requisitesRepository: Repository<Requisites>,
     @InjectRepository(EntityRequisites)
     private entityRequisitesRepository: Repository<EntityRequisites>,
+    private readonly entityService: EntityService,
   ) {}
 
   async create(payload: CreateObjectDto) {
@@ -86,13 +93,38 @@ export class ObjectsService {
       relations: { requisites: { requisites: true } },
     };
 
-    return await this.objectsRepository.findOne(
-      this.getRelationsOptions(payload, options),
+    const newOptions = this.getRelationsOptions(payload, options);
+
+    return await this.entityService.findOne<LicensedObject>(
+      {
+        repository: this.objectsRepository,
+        select: fullFindOptionsObjectSelect,
+        cacheValue: payload.id,
+        relations: newOptions.relations,
+        where: newOptions.where,
+      }
     );
   }
 
   async update(id: string, payload: UpdateObjectDto) {
-    const object = await this.objectsRepository.findOne({ where: { id } });
+    const object = await this.entityService.findOne<LicensedObject>(
+      {
+        repository: this.objectsRepository,
+        select: fullFindOptionsObjectSelect,
+        cacheValue: id,
+        relations: {
+          requisites: {
+            requisites: true,
+          },
+          account: true,
+          manager: true,
+          partner: true,
+        },
+        where: {
+          id,
+        },
+      },
+    );
 
     if (!object) {
       throw new BadRequestException('Объект не найден');

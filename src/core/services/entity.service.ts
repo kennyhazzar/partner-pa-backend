@@ -1,20 +1,30 @@
 import { Injectable, Inject } from '@nestjs/common';
 import { Cache } from 'cache-manager';
-import { FindOneOptions, FindOptionsRelations, Repository } from 'typeorm';
+import { FindOneOptions, FindOptionsRelationByString, FindOptionsRelations, FindOptionsWhere, Repository } from 'typeorm';
+
+export interface FindOneParams<T, U = T> {
+  cacheValue: string;
+  repository: Repository<T>;
+  ttl?: number,
+  select?: FindOneOptions<T>['select'];
+  relations?: FindOptionsRelations<T> | FindOptionsRelationByString;
+  where?: FindOptionsWhere<T>[] | FindOptionsWhere<T>;
+  transform?: (entity: T) => U;
+}
 
 @Injectable()
 export class EntityService {
   constructor(@Inject('CACHE_MANAGER') private readonly cacheManager: Cache) {}
 
-  async findOne<T, U = T>(
-    repository: Repository<T>,
-    select?: FindOneOptions<T>['select'],
-    cacheValue?: string,
-    relations?: FindOptionsRelations<T>,
-    where?: Partial<Record<keyof T, any>>,
-    ttl: number = 3600000,
-    transform?: (entity: T) => U,
-  ): Promise<U | undefined> {
+  async findOne<T, U = T>({
+    cacheValue,
+    repository,
+    ttl = 3600000,
+    select,
+    relations,
+    where,
+    transform,
+  }: FindOneParams<T, U>): Promise<U | undefined> {
     const cacheKey = cacheValue
       ? `${repository.metadata.name.toLowerCase()}_${cacheValue}`
       : '';
