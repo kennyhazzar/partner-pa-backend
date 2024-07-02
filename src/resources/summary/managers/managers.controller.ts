@@ -1,4 +1,12 @@
-import { Body, Controller, Get, Param, Post, Query, UseGuards } from '@nestjs/common';
+import {
+  Body,
+  Controller,
+  Get,
+  Param,
+  Post,
+  Query,
+  UseGuards,
+} from '@nestjs/common';
 import { ManagersService } from './managers.service';
 import { ManagerDto } from '../dto/manager.dto';
 import { AuthGuard } from '../../auth/guards';
@@ -24,7 +32,7 @@ export class ManagersController {
   @UseGuards(AuthGuard)
   async findOne(@Param('id') id: string) {
     if (isUUID(id)) {
-      return this.managersService.findOne(id)
+      return this.managersService.findOne(id);
     }
   }
 }

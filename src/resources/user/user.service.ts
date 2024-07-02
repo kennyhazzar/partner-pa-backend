@@ -19,6 +19,8 @@ import {
 } from './dto';
 import * as bcrypt from 'bcrypt';
 import { EntityService } from '@core/services';
+import { UserRole } from '@core/types';
+import { SetRoleDto } from '../auth/dto';
 
 @Injectable()
 export class UserService {
@@ -74,7 +76,7 @@ export class UserService {
       firstName,
     });
 
-    this.cacheManager.set(`user_${email}`, newUser);
+    this.cacheManager.set(`user_${newUser.id}`, newUser);
 
     return this.userRepository.save(newUser);
   }
@@ -192,5 +194,38 @@ export class UserService {
 
   async deleteRefreshToken(token: string): Promise<void> {
     await this.refreshTokenRepository.delete({ token });
+  }
+
+  async setRole(payload: SetRoleDto): Promise<void> {
+    if (!payload?.id && !payload?.email) {
+      throw new BadRequestException()
+    }
+
+    const where: DeepPartial<{ id: string; email: string }> = {};
+    
+    if (payload?.id) {
+      where.id = payload.id;
+    }
+
+    if (payload?.email) {
+      where.email = payload.email;
+    }
+    
+    await this.userRepository.update({ ...where }, { role: payload.role });
+    await this.entityService.findOne<User>({
+      bypassCache: true,
+      repository: this.userRepository,
+      cacheValue: where?.id as string,
+      relations: {
+        managerAccount: {
+          accounts: true,
+          licensedObjects: { partner: true, requisites: true },
+        },
+      },
+      where: {
+        ...where,
+        isDeleted: false,
+      },
+    });
   }
 }

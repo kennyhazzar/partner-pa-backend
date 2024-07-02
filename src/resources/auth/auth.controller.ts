@@ -17,14 +17,18 @@ import {
   ResetPasswordDto,
   EmailDto,
   VerifyCodeDto,
+  SetRoleDto,
 } from './dto';
 import { ApiBody, ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
-import { ThrottlerBehindProxyGuard } from './guards';
+import { AuthGuard, RolesGuard, ThrottlerBehindProxyGuard } from './guards';
+import { Roles } from './roles.decorator';
+import { UserRole } from '@core/types';
+import { UserService } from '../user/user.service';
 
 @ApiTags('authorization')
 @Controller('auth')
 export class AuthController {
-  constructor(private readonly authService: AuthService) {}
+  constructor(private readonly authService: AuthService, private readonly usersService: UserService) {}
 
   @ApiOperation({
     summary: 'Регистрация пользователя',
@@ -166,5 +170,16 @@ export class AuthController {
     @Body() { email, token, newPassword }: ResetPasswordDto,
   ): Promise<void> {
     await this.authService.resetPassword(email, token, newPassword);
+  }
+
+  @ApiOperation({
+    summary: 'Метод для установки соответствующей роли',
+    description: 'Может воспользоваться только рут'
+  })
+  @Post('set-role')
+  @UseGuards(AuthGuard, RolesGuard)
+  @Roles(UserRole.ROOT)
+  async setRole(@Body() payload: SetRoleDto) {
+    return this.usersService.setRole(payload);
   }
 }

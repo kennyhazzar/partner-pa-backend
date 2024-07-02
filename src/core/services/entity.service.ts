@@ -1,6 +1,7 @@
-import { Injectable, Inject } from '@nestjs/common';
+import { Injectable, Inject, NotFoundException } from '@nestjs/common';
 import { Cache } from 'cache-manager';
 import {
+  FindManyOptions,
   FindOneOptions,
   FindOptionsRelationByString,
   FindOptionsRelations,
@@ -9,13 +10,28 @@ import {
 } from 'typeorm';
 
 export interface FindOneParams<T, U = T> {
-  cacheValue: string;
+  cacheValue?: string;
   repository: Repository<T>;
   ttl?: number;
   select?: FindOneOptions<T>['select'];
   relations?: FindOptionsRelations<T> | FindOptionsRelationByString;
   where?: FindOptionsWhere<T>[] | FindOptionsWhere<T>;
   transform?: (entity: T) => U;
+  bypassCache?: boolean;
+}
+
+export interface FindManyParams<T, U = T> {
+  cacheValue: string;
+  repository: Repository<T>;
+  ttl?: number;
+  select?: FindManyOptions<T>['select'];
+  relations?: FindOptionsRelations<T> | FindOptionsRelationByString;
+  where?: FindOptionsWhere<T>[] | FindOptionsWhere<T>;
+  order?: FindManyOptions<T>['order'];
+  skip?: number;
+  take?: number;
+  transform?: (entities: T[]) => U[];
+  bypassCache?: boolean;
 }
 
 @Injectable()
@@ -30,42 +46,83 @@ export class EntityService {
     relations,
     where,
     transform,
+    bypassCache = false,
   }: FindOneParams<T, U>): Promise<U | undefined> {
-    const cacheKey = cacheValue
-      ? `${repository.metadata.name.toLowerCase()}_${cacheValue}`
-      : '';
+    const cacheKey = cacheValue ? this.getCacheKey(repository.metadata.name, cacheValue) : '';
 
-    let entity = cacheKey
-      ? await this.cacheManager.get<T>(cacheKey)
-      : undefined;
+    let entity: T | undefined;
+
+    if (!bypassCache || !cacheKey) {
+      entity = await this.cacheManager.get<T>(cacheKey);
+    }
 
     if (!entity) {
-      const options: FindOneOptions<T> = {
+      const options: FindManyOptions<T> = {
         where: { ...where },
         relations,
+        select,
       };
-
-      if (select) {
-        options.select = select;
-      }
 
       entity = await repository.findOne(options);
 
-      if (entity) {
-        const transformedEntity = transform
-          ? transform(entity)
-          : (entity as unknown as U);
-
-        if (cacheKey) {
-          await this.cacheManager.set(cacheKey, entity, { ttl } as any);
-        }
-
-        return transformedEntity;
+      if (!entity) {
+        return undefined;
       }
-    } else if (transform) {
-      return transform(entity);
+
+      await this.cacheManager.set(this.getCacheKey(repository.metadata.name, cacheValue || (entity as any)?.id), entity, { ttl } as any);
+
+      return transform ? transform(entity) : (entity as unknown as U);
     }
 
-    return entity as unknown as U;
+    return transform ? transform(entity) : (entity as unknown as U);
+  }
+
+  async findMany<T, U = T>({
+    cacheValue,
+    repository,
+    ttl = 3600,
+    select,
+    relations,
+    where,
+    order,
+    skip,
+    take,
+    transform,
+    bypassCache = false,
+  }: FindManyParams<T, U>): Promise<U[] | undefined> {
+    const cacheKey = `${repository.metadata.name.toLowerCase()}_${cacheValue}`;
+
+    let entities: T[] | undefined;
+
+    if (!bypassCache) {
+      entities = await this.cacheManager.get<T[]>(cacheKey);
+    }
+
+    if (!entities) {
+      const options: FindManyOptions<T> = {
+        where: { ...where },
+        relations,
+        select,
+        order,
+        skip,
+        take,
+      };
+
+      entities = await repository.find(options);
+
+      if (!entities || entities.length === 0) {
+        return [];
+      }
+
+      await this.cacheManager.set(cacheKey, entities, { ttl } as any);
+
+      return transform ? transform(entities) : (entities as unknown as U[]);
+    }
+
+    return transform ? transform(entities) : (entities as unknown as U[]);
+  }
+  
+  getCacheKey(key: string, cacheValue: string) {
+    return `${key.toLowerCase()}_${cacheValue}`;
   }
 }

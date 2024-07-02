@@ -6,7 +6,11 @@ import {
   IsString,
   Length,
   MinLength,
+  IsOptional,
+  IsUUID,
+  IsEnum,
 } from 'class-validator';
+import { UserRole } from '@core/types';
 
 export class EmailDto {
   @ApiProperty({
@@ -102,4 +106,18 @@ export class LoginResponse {
 export interface SendVerifyCode {
   lastSent: number;
   code: string;
+}
+
+export class SetRoleDto {
+  @IsOptional()
+  @IsUUID()
+  id: string;
+
+  @IsOptional()
+  @IsEmail()
+  email: string;
+
+  @IsNotEmpty()
+  @IsEnum(UserRole)
+  role: UserRole;
 }

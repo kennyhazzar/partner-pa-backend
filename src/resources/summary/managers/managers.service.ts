@@ -63,9 +63,8 @@ export class ManagersService {
       },
       take,
       skip,
-    })
+    });
   }
-
 
   async findOne(id: string) {
     return this.entityService.findOne({
@@ -80,7 +79,7 @@ export class ManagersService {
         },
         partner: true,
       },
-    })
+    });
   }
   async delete(id: string) {
     return this.managersRepository.delete(id);

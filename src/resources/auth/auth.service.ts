@@ -108,7 +108,7 @@ export class AuthService {
       throw new UnauthorizedException('Подтвердите почту'); //TODO: сделать автоотправку кода, если текущего нету в кеше
     }
 
-    const payload = { id: user.id, email };
+    const payload = { id: user.id, email, role: user.role };
     const accessToken = this.jwtService.sign(payload);
     const refreshToken = await this.usersService.createRefreshToken(user);
 
