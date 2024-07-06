@@ -82,9 +82,16 @@ export class ObjectsService {
       skip,
     };
 
-    return await this.objectsRepository.find(
-      this.getRelationsOptions(payload, options),
-    );
+    const { where, relations } = this.getRelationsOptions(payload, options);
+
+    return await this.entityService.findMany({
+      repository: this.objectsRepository,
+      cacheValue: `${take}_${skip}`,
+      where,
+      relations,
+      take,
+      skip,
+    });
   }
 
   async findOne(payload: FindOneObjectQuery) {
@@ -101,6 +108,7 @@ export class ObjectsService {
       cacheValue: payload.id,
       relations: newOptions.relations,
       where: newOptions.where,
+      ttl: 900,
     });
   }
 
@@ -163,7 +171,7 @@ export class ObjectsService {
     payload: FindObjectsQuery | FindOneObjectQuery,
     options: FindManyOptions<LicensedObject>,
   ) {
-    const newOptions = { ...options };
+    const newOptions: FindManyOptions<LicensedObject> = { ...options };
 
     if (payload?.accountId) {
       newOptions.where = {

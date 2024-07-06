@@ -198,11 +198,11 @@ export class UserService {
 
   async setRole(payload: SetRoleDto): Promise<void> {
     if (!payload?.id && !payload?.email) {
-      throw new BadRequestException()
+      throw new BadRequestException();
     }
 
     const where: DeepPartial<{ id: string; email: string }> = {};
-    
+
     if (payload?.id) {
       where.id = payload.id;
     }
@@ -210,7 +210,7 @@ export class UserService {
     if (payload?.email) {
       where.email = payload.email;
     }
-    
+
     await this.userRepository.update({ ...where }, { role: payload.role });
     await this.entityService.findOne<User>({
       bypassCache: true,

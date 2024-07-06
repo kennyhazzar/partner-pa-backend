@@ -48,7 +48,9 @@ export class EntityService {
     transform,
     bypassCache = false,
   }: FindOneParams<T, U>): Promise<U | undefined> {
-    const cacheKey = cacheValue ? this.getCacheKey(repository.metadata.name, cacheValue) : '';
+    const cacheKey = cacheValue
+      ? this.getCacheKey(repository.metadata.name, cacheValue)
+      : '';
 
     let entity: T | undefined;
 
@@ -69,7 +71,14 @@ export class EntityService {
         return undefined;
       }
 
-      await this.cacheManager.set(this.getCacheKey(repository.metadata.name, cacheValue || (entity as any)?.id), entity, { ttl } as any);
+      await this.cacheManager.set(
+        this.getCacheKey(
+          repository.metadata.name,
+          cacheValue || (entity as any)?.id,
+        ),
+        entity,
+        { ttl } as any,
+      );
 
       return transform ? transform(entity) : (entity as unknown as U);
     }
@@ -121,7 +130,7 @@ export class EntityService {
 
     return transform ? transform(entities) : (entities as unknown as U[]);
   }
-  
+
   getCacheKey(key: string, cacheValue: string) {
     return `${key.toLowerCase()}_${cacheValue}`;
   }

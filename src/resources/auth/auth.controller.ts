@@ -28,7 +28,10 @@ import { UserService } from '../user/user.service';
 @ApiTags('authorization')
 @Controller('auth')
 export class AuthController {
-  constructor(private readonly authService: AuthService, private readonly usersService: UserService) {}
+  constructor(
+    private readonly authService: AuthService,
+    private readonly usersService: UserService,
+  ) {}
 
   @ApiOperation({
     summary: 'Регистрация пользователя',
@@ -174,7 +177,7 @@ export class AuthController {
 
   @ApiOperation({
     summary: 'Метод для установки соответствующей роли',
-    description: 'Может воспользоваться только рут'
+    description: 'Может воспользоваться только рут',
   })
   @Post('set-role')
   @UseGuards(AuthGuard, RolesGuard)

@@ -1,7 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Manager, Partner } from '../entities';
-import { Repository } from 'typeorm';
+import { DeepPartial, Repository } from 'typeorm';
 import { UserService } from '@resources/user/user.service';
 import { getRandomCode } from '@core/utils';
 import { ALPHABET } from '@core/constants';
@@ -26,7 +26,7 @@ export class ManagersService {
       password,
       payload.firstName,
     );
-    const entity: Omit<Manager, 'id' | 'createdAt' | 'updatedAt'> = {
+    const entity: DeepPartial<Manager> = {
       ...payload,
       userAccount: newUser,
     };

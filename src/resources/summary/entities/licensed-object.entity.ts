@@ -17,6 +17,9 @@ export class LicensedObject extends PrimaryUuidBaseEntity {
   @Column({ nullable: true })
   phone?: string;
 
+  @Column({ default: false })
+  isActive: boolean;
+
   @Column({ name: 'date_of_establishment', nullable: true })
   dateOfEstablishment?: Date;
 
