@@ -9,6 +9,7 @@ import { ManagersController } from './managers/managers.controller';
 import { ManagersService } from './managers/managers.service';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import {
+  Account,
   EntityRequisites,
   LicensedObject,
   Manager,
@@ -34,6 +35,7 @@ import { CacheConfig } from '@core/configs';
       Requisites,
       EntityRequisites,
       Partner,
+      Account,
     ]),
     CacheModule.registerAsync<RedisClientOptions>(CacheConfig),
   ],

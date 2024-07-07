@@ -60,6 +60,7 @@ export class AccountsService {
       );
     }
   }
+  //TODO: сделать как query builder
   async find(
     payload: FindAccountsQuery,
     take: number = 10,
@@ -165,5 +166,9 @@ export class AccountsService {
     }
 
     return newOptions;
+  }
+
+  private transformFindResponse() {
+    
   }
 }
