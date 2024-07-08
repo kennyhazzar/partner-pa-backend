@@ -111,18 +111,24 @@ export class AccountsService {
             revenue: 0,
             email: account.email,
             phone: account.phone,
-            manager: account.manager ? {
-              id: account.manager.id,
-              fullName: account.manager.fullName || `${account.manager.firstName} ${account.manager.secondName} ${account.manager.lastName}`,
-              createdAt: account.manager.createdAt,
-              updatedAt: account.manager.updatedAt,
-            } : null,
+            manager: account.manager
+              ? {
+                  id: account.manager.id,
+                  fullName:
+                    account.manager.fullName ||
+                    `${account.manager.firstName} ${account.manager.secondName} ${account.manager.lastName}`,
+                  createdAt: account.manager.createdAt,
+                  updatedAt: account.manager.updatedAt,
+                }
+              : null,
             objectsRatio: `${activeObjectsCount} / ${objectsCount}`,
-            partner: account.partner ? {
-              id: account.partner.id,
-              title: account.partner.id,
-              requisites: account.partner.requisites,
-            } : null,
+            partner: account.partner
+              ? {
+                  id: account.partner.id,
+                  title: account.partner.id,
+                  requisites: account.partner.requisites,
+                }
+              : null,
           };
         });
       },
@@ -168,7 +174,5 @@ export class AccountsService {
     return newOptions;
   }
 
-  private transformFindResponse() {
-    
-  }
+  private transformFindResponse() {}
 }
