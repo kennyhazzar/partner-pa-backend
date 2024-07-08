@@ -15,13 +15,14 @@ async function bootstrap() {
   });
 
   app.use((req: Request, res: Response, next: () => void) => {
-    res.header('Access-Control-Allow-Origin', '*');
+    res.header("Access-Control-Allow-Origin", req.headers.origin);
     res.header('Access-Control-Allow-Headers', '*');
     res.header(
       'Access-Control-Allow-Headers',
       'Origin, Content-Type, Accept, X-Requested-With, app_token, Authorization',
     );
     res.header('Content-Security-Policy', "default-src 'self'");
+
     if (req.method === 'OPTIONS') {
       res.header(
         'Access-Control-Allow-Methods',
