@@ -1,6 +1,30 @@
-import { IsString, Length, IsNotEmpty, IsUUID } from 'class-validator';
+import {
+  IsString,
+  Length,
+  IsNotEmpty,
+  IsUUID,
+  IsOptional,
+} from 'class-validator';
 
-export class CreateRequisitesDto {
+export class UpdateEntityRequisitesDto {
+  @IsOptional()
+  @IsUUID()
+  requisitesId?: string;
+
+  @IsOptional()
+  @IsUUID()
+  objectId?: string;
+
+  @IsOptional()
+  @IsUUID()
+  partnerId?: string;
+
+  @IsOptional()
+  @IsUUID()
+  accountId?: string;
+}
+
+export class CreateRequisitesDto extends UpdateEntityRequisitesDto {
   @IsString()
   @Length(10, 12)
   @IsNotEmpty()

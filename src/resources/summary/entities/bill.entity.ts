@@ -2,14 +2,15 @@ import { Entity, Column, ManyToOne, JoinColumn } from 'typeorm';
 import { LicensedObject } from './licensed-object.entity';
 import { PrimaryUuidBaseEntity } from '@core/db';
 import { Manager } from './manager.entity';
+import { InvoiceStatus } from '@core/types';
 
 @Entity()
 export class Bill extends PrimaryUuidBaseEntity {
   @Column({ name: 'document_name' })
   documentName: string;
 
-  @Column({ name: 'document_path' })
-  documentPath: string;
+  @Column({ name: 'document_path', nullable: true })
+  documentPath?: string;
 
   @Column({ name: 'account_number' })
   accountNumber: string;
@@ -20,7 +21,12 @@ export class Bill extends PrimaryUuidBaseEntity {
   @Column({ name: 'payment_amount' })
   paymentAmount: number;
 
-  @Column({ name: 'invoice_status' })
+  @Column({
+    name: 'invoice_status',
+    type: 'enum',
+    enum: InvoiceStatus,
+    default: InvoiceStatus.NOT_PAID,
+  })
   invoiceStatus: string;
 
   @Column({ name: 'start_date' })

@@ -7,6 +7,7 @@ import {
   FindOptionsRelations,
   FindOptionsWhere,
   Repository,
+  SelectQueryBuilder,
 } from 'typeorm';
 
 export interface FindOneParams<T, U = T> {
@@ -30,8 +31,10 @@ export interface FindManyParams<T, U = T> {
   order?: FindManyOptions<T>['order'];
   skip?: number;
   take?: number;
-  transform?: (entities: T[]) => U[];
+  transform?: (entities: T[]) => Promise<U[]>;
   bypassCache?: boolean;
+  queryBuilder?: (qb: SelectQueryBuilder<T>) => SelectQueryBuilder<T>;
+  queryBuilderAlias?: string;
 }
 
 @Injectable()
@@ -98,6 +101,8 @@ export class EntityService {
     take,
     transform,
     bypassCache = false,
+    queryBuilder,
+    queryBuilderAlias,
   }: FindManyParams<T, U>): Promise<U[] | undefined> {
     const cacheKey = `${repository.metadata.name.toLowerCase()}_${cacheValue}`;
 
@@ -108,16 +113,22 @@ export class EntityService {
     }
 
     if (!entities) {
-      const options: FindManyOptions<T> = {
-        where: { ...where },
-        relations,
-        select,
-        order,
-        skip,
-        take,
-      };
+      if (queryBuilder) {
+        let qb = repository.createQueryBuilder(queryBuilderAlias);
+        qb = queryBuilder(qb);
+        entities = await qb.getRawMany();
+      } else {
+        const options: FindManyOptions<T> = {
+          where: { ...where },
+          relations,
+          select,
+          order,
+          skip,
+          take,
+        };
 
-      entities = await repository.find(options);
+        entities = await repository.find(options);
+      }
 
       if (!entities || entities.length === 0) {
         return [];
@@ -125,10 +136,14 @@ export class EntityService {
 
       await this.cacheManager.set(cacheKey, entities, { ttl } as any);
 
-      return transform ? transform(entities) : (entities as unknown as U[]);
+      return (await transform)
+        ? await transform(entities)
+        : (entities as unknown as U[]);
     }
 
-    return transform ? transform(entities) : (entities as unknown as U[]);
+    return (await transform)
+      ? await transform(entities)
+      : (entities as unknown as U[]);
   }
 
   getCacheKey(key: string, cacheValue: string) {

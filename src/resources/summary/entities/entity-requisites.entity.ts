@@ -7,7 +7,10 @@ import { Account } from './account.entity';
 
 @Entity()
 export class EntityRequisites extends PrimaryUuidBaseEntity {
-  @ManyToOne(() => Requisites)
+  @ManyToOne(() => Requisites, {
+    nullable: true,
+    onDelete: 'SET NULL',
+  })
   @JoinColumn()
   requisites: Requisites;
 

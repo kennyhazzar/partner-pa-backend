@@ -10,7 +10,10 @@ import {
   IsUUID,
   IsNotEmpty,
 } from 'class-validator';
-import { CreateRequisitesDto } from './create-requisites.dto';
+import {
+  CreateRequisitesDto,
+  UpdateRequisitesDto,
+} from './create-requisites.dto';
 import { Manager, Partner } from '../entities';
 import { DeepPartial } from 'typeorm';
 
@@ -54,7 +57,10 @@ export class FindAccountQuery extends AccountRelationsDto {
 }
 
 export class FindAccountsResponse {
-  inn?: string;
+  inn?: {
+    inn: string;
+    ids: Array<number>;
+  };
 
   companyName?: string;
 
@@ -62,9 +68,9 @@ export class FindAccountsResponse {
 
   phone?: string;
 
-  partner?: DeepPartial<Partner>;
+  partner?: string;
 
-  manager?: Manager;
+  manager?: DeepPartial<Manager>;
 
   objectsRatio?: string;
 
@@ -73,4 +79,28 @@ export class FindAccountsResponse {
   averageBill: number;
 
   revenue: number;
+}
+
+export class FindAccountsRawQueryBuilderResponse {
+  accountId: string;
+  accountEmail: string;
+  accountPhone: string;
+  partnerTitle: string;
+  accountCreatedAt: Date;
+  accountUpdatedAt: Date;
+  managerFirstName: string;
+  managerSecondName: string;
+  managerLastName: string;
+  totalLicensedObjects: string;
+  activeLicensedObjects: string;
+}
+
+export class UpdateAccountDto {
+  @IsOptional()
+  @IsEmail()
+  email: string;
+
+  @IsOptional()
+  @IsPhoneNumber('RU')
+  phone: string;
 }

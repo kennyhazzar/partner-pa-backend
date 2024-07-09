@@ -4,6 +4,7 @@ import { EntityRequisites } from './entity-requisites.entity';
 import { Partner } from './partner.entity';
 import { LicensedObject } from './licensed-object.entity';
 import { Manager } from './manager.entity';
+import { Software } from './software.entity';
 
 @Entity()
 export class Account extends PrimaryUuidBaseEntity {
@@ -38,4 +39,10 @@ export class Account extends PrimaryUuidBaseEntity {
   })
   @JoinColumn()
   partner: Partner;
+
+  @ManyToOne(() => Software, (software) => software.accounts, {
+    nullable: true,
+    onDelete: 'SET NULL',
+  })
+  software: Software;
 }

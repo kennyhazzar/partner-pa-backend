@@ -24,6 +24,10 @@ import { EntityService } from '@core/services';
 import { CacheModule } from '@nestjs/cache-manager';
 import { RedisClientOptions } from 'redis';
 import { CacheConfig } from '@core/configs';
+import { FinancesController } from '../finances/finances.controller';
+import { FinancesService } from '../finances/finances.service';
+import { RequisitesModule } from './requisites/requisites.module';
+import { RequisitesService } from './requisites/requisites.service';
 
 @Module({
   imports: [
@@ -38,6 +42,7 @@ import { CacheConfig } from '@core/configs';
       Account,
     ]),
     CacheModule.registerAsync<RedisClientOptions>(CacheConfig),
+    RequisitesModule,
   ],
   controllers: [
     ProductsController,
@@ -45,6 +50,7 @@ import { CacheConfig } from '@core/configs';
     AccountsController,
     ManagersController,
     ObjectsController,
+    FinancesController,
   ],
   providers: [
     EntityService,
@@ -53,6 +59,8 @@ import { CacheConfig } from '@core/configs';
     AccountsService,
     ManagersService,
     ObjectsService,
+    FinancesService,
+    RequisitesService,
   ],
 })
 export class SummaryModule {}

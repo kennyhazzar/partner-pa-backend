@@ -22,7 +22,7 @@ export const TypeormConfig: TypeOrmModuleAsyncOptions = {
       password,
       port,
       username,
-      // logging: configService.get<CommonConfigs>('common').env === 'development',
+      logging: configService.get<CommonConfigs>('common').env === 'development',
       entities: [join(__dirname, '../../', '/**/*.entity.{js,ts}')],
       synchronize: true,
       autoLoadEntities: true,

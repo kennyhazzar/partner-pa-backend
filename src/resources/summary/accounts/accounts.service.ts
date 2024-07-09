@@ -13,12 +13,15 @@ import {
   CreateAccountDto,
   FindAccountQuery,
   FindAccountsQuery,
+  FindAccountsRawQueryBuilderResponse,
   FindAccountsResponse,
 } from '../dto';
+import { RequisitesService } from '@resources/summary/requisites/requisites.service';
 
 @Injectable()
 export class AccountsService {
   constructor(
+    private readonly requisitesService: RequisitesService,
     private readonly entityService: EntityService,
     @InjectRepository(Account)
     private readonly accountsRepository: Repository<Account>,
@@ -46,21 +49,11 @@ export class AccountsService {
 
     if (requisites) {
       account.requisites = await Promise.all(
-        requisites.map(async (requisitesDto) => {
-          const requisitesEntity =
-            this.requisitesRepository.create(requisitesDto);
-          await this.requisitesRepository.save(requisitesEntity);
-
-          const entityRequisites = new EntityRequisites();
-          entityRequisites.requisites = requisitesEntity;
-          entityRequisites.account = account;
-
-          return this.entityRequisitesRepository.save(entityRequisites);
-        }),
+        requisites.map(async (requisitesDto) => this.requisitesService.create(requisitesDto)),
       );
     }
   }
-  //TODO: сделать как query builder
+
   async find(
     payload: FindAccountsQuery,
     take: number = 10,
@@ -76,61 +69,108 @@ export class AccountsService {
 
     return await this.entityService.findMany<Account, FindAccountsResponse>({
       repository: this.accountsRepository,
-      cacheValue: `${take}_${skip}`,
+      cacheValue: `accounts_${take}_${skip}`,
       where,
       relations,
       take,
       skip,
-      ttl: 900,
-      transform: (accounts) => {
-        return accounts.map((account) => {
-          const activeObjectsCount = account.licensedObjects.filter(
-            (object) => object.isActive,
-          );
+      ttl: 300,
+      bypassCache: true,
+      queryBuilderAlias: 'account',
+      queryBuilder: (qb) => {
+        return qb
+          .leftJoin('account.licensedObjects', 'licensedObject')
+          .leftJoin('account.requisites', 'accountRequisites')
+          .leftJoin('accountRequisites.requisites', 'targetRequisites')
+          .leftJoin('account.manager', 'manager')
+          .leftJoin('account.partner', 'partner')
+          .select('account.id', 'accountId')
+          .addSelect('account.email', 'accountEmail')
+          .addSelect('account.phone', 'accountPhone')
+          .addSelect('account.created_at', 'accountCreatedAt')
+          .addSelect('account.updated_at', 'accountUpdatedAt')
+          .addSelect('manager.first_name', 'managerFirstName')
+          .addSelect('manager.second_name', 'managerSecondName')
+          .addSelect('manager.last_name', 'managerLastName')
+          .addSelect('targetRequisites.id', 'reqId')
+          .addSelect('partner.title', 'partnerTitle')
+          .addSelect('COUNT(licensedObject.id)', 'totalLicensedObjects')
+          .addSelect(
+            'COUNT(CASE WHEN licensedObject.isActive = true THEN 1 ELSE NULL END)',
+            'activeLicensedObjects',
+          )
+          .groupBy('account.id')
+          .addGroupBy('manager.first_name')
+          .addGroupBy('manager.second_name')
+          .addGroupBy('manager.last_name')
+          .addGroupBy('targetRequisites.id')
+          .addGroupBy('partner.title');
+      },
+      transform: async (entities) => {
+        const raw =
+          entities as unknown as Array<FindAccountsRawQueryBuilderResponse>;
 
-          const objectsCount = account.licensedObjects.length;
+        const accountRequisites = await Promise.all(
+          raw.map(async (account) => {
+            return {
+              requisites: await this.requisitesService.findByEntity({
+                accountId: account.accountId,
+              }),
+              accountId: account.accountId,
+            };
+          }),
+        );
 
-          const { inn, companyName } = account.requisites.reduce(
-            (acc, curr, index) => {
-              return {
-                inn:
-                  acc.inn + `${curr.requisites.inn}${index !== 0 ? ', ' : ''}`,
-                companyName:
-                  acc.companyName +
-                  `${curr.requisites.companyName}${index !== 0 ? ', ' : ''}`,
-              };
-            },
-            { inn: '', companyName: '' },
-          );
+        return raw
+          .reduce((accumulator, current) => {
+            if (
+              !accumulator.find((item) => item.accountId === current.accountId)
+            ) {
+              accumulator.push(current);
+            }
+            return accumulator;
+          }, [] as FindAccountsRawQueryBuilderResponse[])
+          .map((account) => {
+            const requisites = accountRequisites.find(
+              ({ accountId }) => accountId === account.accountId,
+            ).requisites;
 
-          return {
-            inn,
-            companyName,
-            averageBill: 0,
-            ltv: 0,
-            revenue: 0,
-            email: account.email,
-            phone: account.phone,
-            manager: account.manager
-              ? {
-                  id: account.manager.id,
-                  fullName:
-                    account.manager.fullName ||
-                    `${account.manager.firstName} ${account.manager.secondName} ${account.manager.lastName}`,
-                  createdAt: account.manager.createdAt,
-                  updatedAt: account.manager.updatedAt,
-                }
-              : null,
-            objectsRatio: `${activeObjectsCount} / ${objectsCount}`,
-            partner: account.partner
-              ? {
-                  id: account.partner.id,
-                  title: account.partner.id,
-                  requisites: account.partner.requisites,
-                }
-              : null,
-          };
-        });
+            const { ids, inn, companyName } = requisites.reduce(
+              (acc, curr, index) => {
+                return {
+                  ids: [...acc.ids, curr.requisites.id],
+                  inn:
+                    acc.inn +
+                    `${curr.requisites.inn}${requisites.length !== 1 && index !== requisites.length - 1 ? ', ' : ''}`,
+                  companyName:
+                    acc.companyName +
+                    `${curr.requisites.companyName}${requisites.length !== 1 && index !== requisites.length - 1 ? ', ' : ''}`,
+                };
+              },
+              { ids: [], inn: '', companyName: '' },
+            );
+
+            return {
+              id: account.accountId,
+              email: account.accountEmail,
+              inn: {
+                ids,
+                inn,
+              },
+              ltv: null,
+              revenue: null,
+              companyName,
+              averageBill: null,
+              partner: account.partnerTitle,
+              objectsRatio: `${account.activeLicensedObjects} / ${account.totalLicensedObjects}`,
+              manager: {
+                firstName: account.managerFirstName,
+                secondName: account.managerSecondName,
+                lastName: account.managerLastName,
+              },
+              phone: account.accountPhone,
+            };
+          });
       },
     });
   }
