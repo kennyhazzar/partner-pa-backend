@@ -1,24 +1,45 @@
-import { Body, Controller, Get, Post, Put, UseGuards } from '@nestjs/common';
+import {
+  Body,
+  Controller,
+  Get,
+  Param,
+  Post,
+  Put,
+  Query,
+  UseGuards,
+} from '@nestjs/common';
 import { AccountsService } from './accounts.service';
 import { ApiTags } from '@nestjs/swagger';
 import { AuthGuard } from '@resources/auth/guards';
-import { CreateAccountDto, FindAccountsQuery } from '../dto';
+import {
+  AccountRelationsDto,
+  CreateAccountDto,
+  FindAccountQuery,
+  FindAccountsQuery,
+} from '../dto';
 
 @ApiTags('accounts')
 @Controller('accounts')
+@UseGuards(AuthGuard)
 export class AccountsController {
   constructor(private readonly accountsService: AccountsService) {}
 
   @Post()
-  @UseGuards(AuthGuard)
   async create(@Body() payload: CreateAccountDto) {
     return this.accountsService.create(payload);
   }
 
   @Get()
-  // @UseGuards(AuthGuard)
   async find(@Body() payload: FindAccountsQuery) {
     return this.accountsService.find(payload);
+  }
+
+  @Get(':id')
+  async findOne(
+    @Param('id') id: string,
+    @Query() payload: AccountRelationsDto,
+  ) {
+    return this.accountsService.findOne({ id, ...payload });
   }
 
   @Put()

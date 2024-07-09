@@ -1,4 +1,8 @@
-import { BadRequestException, Injectable } from '@nestjs/common';
+import {
+  BadRequestException,
+  Injectable,
+  NotFoundException,
+} from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { EntityRequisites, Requisites } from '../entities';
 import { FindManyOptions, Repository } from 'typeorm';
@@ -18,13 +22,22 @@ export class RequisitesService {
   ) {}
 
   async findOneByRequisiteId(id: string) {
-    return this.entityRequisitesRepository.findOne({
+    const requisite = await this.entityRequisitesRepository.findOne({
       where: {
         requisites: {
           id,
-        }
-      }
+        },
+      },
+      relations: {
+        requisites: true,
+      },
     });
+
+    if (!requisite) {
+      throw new NotFoundException();
+    }
+
+    return requisite;
   }
 
   async findByEntity(payload: UpdateEntityRequisitesDto) {
@@ -35,21 +48,37 @@ export class RequisitesService {
 
     if (payload?.accountId) {
       options.where = { ...options.where, account: { id: payload.accountId } };
-      options.relations = { ...options.relations, account: true }
+      options.relations = { ...options.relations, account: true };
     } else if (payload?.objectId) {
       options.where = { ...options.where, object: { id: payload.objectId } };
-      options.relations = { ...options.relations, object: true }
+      options.relations = { ...options.relations, object: true };
     } else if (payload?.requisitesId) {
-      options.where = { ...options.where, requisites: { id: payload.requisitesId } };
+      options.where = {
+        ...options.where,
+        requisites: { id: payload.requisitesId },
+      };
     } else if (payload?.partnerId) {
       options.where = { ...options.where, partner: { id: payload.partnerId } };
-      options.relations = { ...options.relations, partner: true }
+      options.relations = { ...options.relations, partner: true };
+    } else {
+      throw new BadRequestException();
     }
 
     return this.entityRequisitesRepository.find(options);
   }
 
   async create(payload: CreateRequisitesDto) {
+    if (
+      await this.requisitesRepository.exists({
+        where: {
+          inn: payload.inn,
+          kpp: payload.kpp,
+        },
+      })
+    ) {
+      throw new BadRequestException('Такие реквизиты уже существуют');
+    }
+
     const requisitesEntity = this.requisitesRepository.create(payload);
     await this.requisitesRepository.save(requisitesEntity);
 

@@ -1,9 +1,10 @@
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { EntityRequisites, Partner, Requisites } from '../entities';
+import { Partner } from '../entities';
 import { Repository } from 'typeorm';
 import { CreatePartnerDto, fullFindOptionsObjectSelect } from '../dto';
 import { EntityService } from '@core/services';
+import { RequisitesService } from '@resources/summary/requisites/requisites.service';
 
 @Injectable()
 export class PartnersService {
@@ -11,10 +12,7 @@ export class PartnersService {
     private readonly entityService: EntityService,
     @InjectRepository(Partner)
     private readonly partnersRepository: Repository<Partner>,
-    @InjectRepository(Requisites)
-    private readonly requisitesRepository: Repository<Requisites>,
-    @InjectRepository(EntityRequisites)
-    private entityRequisitesRepository: Repository<EntityRequisites>,
+    private readonly requisitesService: RequisitesService,
   ) {}
 
   async create(payload: CreatePartnerDto) {
@@ -26,17 +24,9 @@ export class PartnersService {
 
     if (requisites) {
       partner.requisites = await Promise.all(
-        requisites.map(async (requisitesDto) => {
-          const requisitesEntity =
-            this.requisitesRepository.create(requisitesDto);
-          await this.requisitesRepository.save(requisitesEntity);
-
-          const entityRequisites = new EntityRequisites();
-          entityRequisites.requisites = requisitesEntity;
-          entityRequisites.partner = partner;
-
-          return this.entityRequisitesRepository.save(entityRequisites);
-        }),
+        requisites.map(async (requisitesDto) =>
+          this.requisitesService.create(requisitesDto),
+        ),
       );
     }
 

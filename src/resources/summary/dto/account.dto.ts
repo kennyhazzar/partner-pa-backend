@@ -10,11 +10,8 @@ import {
   IsUUID,
   IsNotEmpty,
 } from 'class-validator';
-import {
-  CreateRequisitesDto,
-  UpdateRequisitesDto,
-} from './create-requisites.dto';
-import { Manager, Partner } from '../entities';
+import { CreateRequisitesDto } from './create-requisites.dto';
+import { Manager } from '../entities';
 import { DeepPartial } from 'typeorm';
 
 export class AccountRelationsDto {

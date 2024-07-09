@@ -49,3 +49,9 @@ export class UpdateRequisitesDto extends CreateRequisitesDto {
   @IsUUID()
   id: string;
 }
+
+export class FindRequisitesQuery {
+  @IsNotEmpty()
+  @IsUUID()
+  id: string;
+}

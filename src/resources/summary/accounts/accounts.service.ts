@@ -1,13 +1,7 @@
 import { EntityService } from '@core/services';
-import { Injectable } from '@nestjs/common';
+import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import {
-  Account,
-  EntityRequisites,
-  Manager,
-  Partner,
-  Requisites,
-} from '../entities';
+import { Account, Manager, Partner } from '../entities';
 import { FindManyOptions, Repository } from 'typeorm';
 import {
   CreateAccountDto,
@@ -25,10 +19,6 @@ export class AccountsService {
     private readonly entityService: EntityService,
     @InjectRepository(Account)
     private readonly accountsRepository: Repository<Account>,
-    @InjectRepository(Requisites)
-    private readonly requisitesRepository: Repository<Requisites>,
-    @InjectRepository(EntityRequisites)
-    private entityRequisitesRepository: Repository<EntityRequisites>,
   ) {}
 
   async create(payload: CreateAccountDto) {
@@ -49,9 +39,13 @@ export class AccountsService {
 
     if (requisites) {
       account.requisites = await Promise.all(
-        requisites.map(async (requisitesDto) => this.requisitesService.create(requisitesDto)),
+        requisites.map(async (requisitesDto) =>
+          this.requisitesService.create(requisitesDto),
+        ),
       );
     }
+
+    return this.accountsRepository.save(account);
   }
 
   async find(
@@ -181,12 +175,18 @@ export class AccountsService {
       relations: { requisites: { requisites: true } },
     });
 
-    return await this.entityService.findOne<Account>({
+    const account = await this.entityService.findOne<Account>({
       repository: this.accountsRepository,
       cacheValue: payload.id,
       relations,
       where,
     });
+
+    if (!account) {
+      throw new NotFoundException();
+    }
+
+    return account;
   }
 
   private getRelationsOptions(
