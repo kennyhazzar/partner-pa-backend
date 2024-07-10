@@ -14,13 +14,12 @@ import { AuthGuard } from '@resources/auth/guards';
 import {
   AccountRelationsDto,
   CreateAccountDto,
-  FindAccountQuery,
   FindAccountsQuery,
 } from '../dto';
 
 @ApiTags('accounts')
 @Controller('accounts')
-@UseGuards(AuthGuard)
+// @UseGuards(AuthGuard)
 export class AccountsController {
   constructor(private readonly accountsService: AccountsService) {}
 

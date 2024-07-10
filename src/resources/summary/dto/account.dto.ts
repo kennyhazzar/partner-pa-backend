@@ -74,8 +74,6 @@ export class FindAccountsResponse {
   ltv: number;
 
   averageBill: number;
-
-  revenue: number;
 }
 
 export class FindAccountsRawQueryBuilderResponse {
@@ -90,6 +88,9 @@ export class FindAccountsRawQueryBuilderResponse {
   managerLastName: string;
   totalLicensedObjects: string;
   activeLicensedObjects: string;
+  LT: number;
+  averageCheck: string;
+  LTV: string;
 }
 
 export class UpdateAccountDto {

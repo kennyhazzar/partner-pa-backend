@@ -78,6 +78,7 @@ export class AccountsService {
           .leftJoin('accountRequisites.requisites', 'targetRequisites')
           .leftJoin('account.manager', 'manager')
           .leftJoin('account.partner', 'partner')
+          .leftJoin('licensedObject.licensedDocuments', 'bill')
           .select('account.id', 'accountId')
           .addSelect('account.email', 'accountEmail')
           .addSelect('account.phone', 'accountPhone')
@@ -89,10 +90,14 @@ export class AccountsService {
           .addSelect('targetRequisites.id', 'reqId')
           .addSelect('partner.title', 'partnerTitle')
           .addSelect('COUNT(licensedObject.id)', 'totalLicensedObjects')
-          .addSelect(
-            'COUNT(CASE WHEN licensedObject.isActive = true THEN 1 ELSE NULL END)',
-            'activeLicensedObjects',
-          )
+          .addSelect(`
+            COUNT(DISTINCT licensedObject.id)
+            FILTER (WHERE licensedObject.isActive = true 
+            OR (bill.invoiceStatus = 'paid' AND bill.startDate <= NOW() AND bill.endDate >= NOW()))
+        `, 'activeLicensedObjects')
+          .addSelect('AVG(DATE_PART(\'day\', bill.endDate - bill.startDate))', 'LT')
+          .addSelect('AVG(bill.paymentAmount)', 'averageCheck')
+          .addSelect('SUM(bill.paymentAmount)', 'LTV')
           .groupBy('account.id')
           .addGroupBy('manager.first_name')
           .addGroupBy('manager.second_name')
@@ -103,6 +108,8 @@ export class AccountsService {
       transform: async (entities) => {
         const raw =
           entities as unknown as Array<FindAccountsRawQueryBuilderResponse>;
+
+        console.log(raw);
 
         const accountRequisites = await Promise.all(
           raw.map(async (account) => {
@@ -151,10 +158,10 @@ export class AccountsService {
                 ids,
                 inn,
               },
-              ltv: null,
-              revenue: null,
+              lt: account.LT,
+              ltv: +account.LTV,
               companyName,
-              averageBill: null,
+              averageBill: +account.averageCheck,
               partner: account.partnerTitle,
               objectsRatio: `${account.activeLicensedObjects} / ${account.totalLicensedObjects}`,
               manager: {
@@ -213,6 +220,4 @@ export class AccountsService {
 
     return newOptions;
   }
-
-  private transformFindResponse() {}
 }

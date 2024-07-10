@@ -18,17 +18,16 @@ import { isUUID } from 'class-validator';
 
 @ApiTags('objects')
 @Controller('objects')
+// @UseGuards(AuthGuard)
 export class ObjectsController {
   constructor(private readonly objectsService: ObjectsService) {}
 
   @Post()
-  @UseGuards(AuthGuard)
   async create(@Body() payload: CreateObjectDto) {
     return this.objectsService.create(payload);
   }
 
   @Get()
-  @UseGuards(AuthGuard)
   async find(
     @Query() query: FindObjectsQuery,
     @Query('take', new DefaultValuePipe(10), ParseIntPipe) take: number,
@@ -38,7 +37,6 @@ export class ObjectsController {
   }
 
   @Get(':id')
-  @UseGuards(AuthGuard)
   async findOne(@Param('id') id: string) {
     if (isUUID(id)) {
       return this.objectsService.findOne({ id });
