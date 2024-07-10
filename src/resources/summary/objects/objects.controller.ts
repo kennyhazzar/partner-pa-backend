@@ -4,6 +4,8 @@ import {
   Controller,
   DefaultValuePipe,
   Get,
+  HttpCode,
+  HttpStatus,
   Param,
   ParseIntPipe,
   Post,
@@ -13,20 +15,31 @@ import {
 import { ObjectsService } from './objects.service';
 import { CreateObjectDto, FindObjectsQuery } from '../dto/object.dto';
 import { AuthGuard } from '@resources/auth/guards';
-import { ApiTags } from '@nestjs/swagger';
+import { ApiBearerAuth, ApiBody, ApiOperation, ApiTags } from '@nestjs/swagger';
 import { isUUID } from 'class-validator';
 
 @ApiTags('objects')
+@ApiBearerAuth()
 @Controller('objects')
-// @UseGuards(AuthGuard)
+@UseGuards(AuthGuard)
 export class ObjectsController {
   constructor(private readonly objectsService: ObjectsService) {}
 
+  @ApiOperation({
+    summary: 'Создание объекта'
+  })
+  @ApiBody({
+    type: CreateObjectDto,
+  })
   @Post()
+  @HttpCode(HttpStatus.OK)
   async create(@Body() payload: CreateObjectDto) {
     return this.objectsService.create(payload);
   }
 
+  @ApiOperation({
+    summary: 'Получение списка объектов'
+  })
   @Get()
   async find(
     @Query() query: FindObjectsQuery,
@@ -36,6 +49,9 @@ export class ObjectsController {
     return this.objectsService.find(query, take, skip);
   }
 
+  @ApiOperation({
+    summary: 'Получение конкретного объекта'
+  })
   @Get(':id')
   async findOne(@Param('id') id: string) {
     if (isUUID(id)) {

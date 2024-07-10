@@ -92,6 +92,7 @@ export class AccountsService {
           .addSelect('account.phone', 'accountPhone')
           .addSelect('account.created_at', 'accountCreatedAt')
           .addSelect('account.updated_at', 'accountUpdatedAt')
+          .addSelect('manager.id', 'managerId')
           .addSelect('manager.first_name', 'managerFirstName')
           .addSelect('manager.second_name', 'managerSecondName')
           .addSelect('manager.last_name', 'managerLastName')
@@ -119,8 +120,9 @@ export class AccountsService {
           .addGroupBy('manager.first_name')
           .addGroupBy('manager.second_name')
           .addGroupBy('manager.last_name')
+          .addGroupBy('manager.id')
           .addGroupBy('targetRequisites.id')
-          .addGroupBy('partner.title');
+          .addGroupBy('partner.title')
       },
       transform: async (entities) => {
         const raw =

@@ -42,7 +42,9 @@ export class AuthService {
 
     const newUser = await this.usersService.create(email, password, firstName);
 
-    await this.sendVerificationCode(newUser.email);
+    if (!newUser.isEmailConfirmed) {
+      await this.sendVerificationCode(newUser.email);
+    }
   }
 
   async sendVerificationCode(email: string): Promise<void> {

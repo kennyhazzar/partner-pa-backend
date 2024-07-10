@@ -26,8 +26,6 @@ import { EntityService } from '@core/services';
 import { CacheModule } from '@nestjs/cache-manager';
 import { RedisClientOptions } from 'redis';
 import { CacheConfig } from '@core/configs';
-import { FinancesController } from '../finances/finances.controller';
-import { FinancesService } from '../finances/finances.service';
 import { RequisitesModule } from './requisites/requisites.module';
 import { RequisitesService } from './requisites/requisites.service';
 import { BillsModule } from './bills/bills.module';
@@ -56,7 +54,6 @@ import { BillsModule } from './bills/bills.module';
     AccountsController,
     ManagersController,
     ObjectsController,
-    FinancesController,
     ProductsController,
   ],
   providers: [
@@ -66,7 +63,6 @@ import { BillsModule } from './bills/bills.module';
     AccountsService,
     ManagersService,
     ObjectsService,
-    FinancesService,
     RequisitesService,
   ],
 })

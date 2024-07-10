@@ -47,7 +47,10 @@ export class CreateObjectDto extends ObjectsRelationsDto {
   @Length(3, 128)
   title: string;
 
-  @ApiProperty()
+  @ApiProperty({
+    type: CreateRequisitesDto,
+    isArray: true,
+  })
   @ValidateNested({ each: true })
   @ArrayMinSize(1)
   @Type(() => CreateRequisitesDto)

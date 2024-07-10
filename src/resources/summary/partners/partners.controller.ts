@@ -4,6 +4,8 @@ import {
   Controller,
   DefaultValuePipe,
   Get,
+  HttpCode,
+  HttpStatus,
   Param,
   ParseIntPipe,
   Post,
@@ -12,16 +14,29 @@ import {
 import { PartnersService } from './partners.service';
 import { CreatePartnerDto } from '../dto';
 import { isUUID } from 'class-validator';
+import { ApiBearerAuth, ApiBody, ApiOperation, ApiTags } from '@nestjs/swagger';
 
+@ApiBearerAuth()
+@ApiTags('partners')
 @Controller('partners')
 export class PartnersController {
   constructor(private readonly partnersService: PartnersService) {}
 
+  @ApiOperation({
+    summary: 'Создание партнера',
+  })
+  @ApiBody({
+    type: CreatePartnerDto,
+  })
   @Post()
+  @HttpCode(HttpStatus.OK)
   async create(@Body() payload: CreatePartnerDto) {
     return this.partnersService.create(payload);
   }
 
+  @ApiOperation({
+    summary: 'Получение списка партнеров',
+  })
   @Get()
   async find(
     @Query('take', new DefaultValuePipe(10), ParseIntPipe) take: number,
@@ -30,6 +45,9 @@ export class PartnersController {
     return this.partnersService.find(take, skip);
   }
 
+  @ApiOperation({
+    summary: 'Получение конкретного партнера',
+  })
   @Get(':id')
   async findOne(@Param('id') id: string) {
     if (isUUID(id)) {

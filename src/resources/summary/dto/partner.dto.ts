@@ -20,7 +20,10 @@ export class CreatePartnerDto {
   @Length(3, 128)
   title: string;
 
-  @ApiProperty()
+  @ApiProperty({
+    type: UpdateRequisitesDto,
+    isArray: true,
+  })
   @ValidateNested({ each: true })
   @ArrayMinSize(1)
   @IsOptional()

@@ -19,7 +19,7 @@ import {
   VerifyCodeDto,
   SetRoleDto,
 } from './dto';
-import { ApiBody, ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
+import { ApiBearerAuth, ApiBody, ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
 import { AuthGuard, RolesGuard, ThrottlerBehindProxyGuard } from './guards';
 import { Roles } from './roles.decorator';
 import { UserRole } from '@core/types';
@@ -150,8 +150,8 @@ export class AuthController {
     type: EmailDto,
     required: true,
   })
-  @HttpCode(HttpStatus.OK)
   @Post('forgot-password')
+  @HttpCode(HttpStatus.OK)
   @UseGuards(ThrottlerBehindProxyGuard)
   async forgotPassword(@Body() { email }: EmailDto): Promise<void> {
     await this.authService.sendPasswordResetToken(email);
@@ -166,8 +166,8 @@ export class AuthController {
       'Для выполнения сброса пароля требуется передать новый пароль, токен, полученный на почту, а также почту пользователя. При NODE_ENV нужно отправить токен равный "token"',
     type: ResetPasswordDto,
   })
-  @HttpCode(HttpStatus.OK)
   @Post('reset-password')
+  @HttpCode(HttpStatus.OK)
   @UseGuards(ThrottlerBehindProxyGuard)
   async resetPassword(
     @Body() { email, token, newPassword }: ResetPasswordDto,
@@ -175,11 +175,13 @@ export class AuthController {
     await this.authService.resetPassword(email, token, newPassword);
   }
 
+  @ApiBearerAuth()
   @ApiOperation({
     summary: 'Метод для установки соответствующей роли',
     description: 'Может воспользоваться только рут',
   })
   @Post('set-role')
+  @HttpCode(HttpStatus.OK)
   @UseGuards(AuthGuard, RolesGuard)
   @Roles(UserRole.ROOT)
   async setRole(@Body() payload: SetRoleDto) {

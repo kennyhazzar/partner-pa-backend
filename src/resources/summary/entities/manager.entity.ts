@@ -13,18 +13,23 @@ import { Partner } from './partner.entity';
 import { LicensedObject } from './licensed-object.entity';
 import { Account } from './account.entity';
 import { Bill } from './bill.entity';
+import { ApiProperty } from '@nestjs/swagger';
 
 @Entity()
 export class Manager extends PrimaryUuidBaseEntity {
+  @ApiProperty()
   @Column({ name: 'first_name', nullable: true })
   firstName?: string;
 
+  @ApiProperty()
   @Column({ name: 'second_name', nullable: true })
   secondName?: string;
 
+  @ApiProperty()
   @Column({ name: 'last_name', nullable: true })
   lastName?: string;
 
+  @ApiProperty()
   @Column({ name: 'full_name', nullable: true })
   fullName?: string;
 
