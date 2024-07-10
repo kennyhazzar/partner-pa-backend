@@ -202,6 +202,11 @@ export class ObjectsService {
               kpp,
               ids,
             },
+            manager: {
+              firstName: object.managerFirstName,
+              secondName: object.managerSecondName,
+              lastName: object.managerLastName,
+            },
             email: object.licensedObjectEmail,
             partnerTitle: object.partnerTitle,
             phone: object.licensedObjectPhone,
