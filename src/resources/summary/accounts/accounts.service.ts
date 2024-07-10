@@ -153,7 +153,7 @@ export class AccountsService {
               ({ accountId }) => accountId === account.accountId,
             ).requisites;
 
-            const { ids, inn, companyName } = requisites.reduce(
+            const { ids, inn, companyName, kpp } = requisites.reduce(
               (acc, curr, index) => {
                 return {
                   ids: [...acc.ids, curr.requisites.id],
@@ -163,9 +163,12 @@ export class AccountsService {
                   companyName:
                     acc.companyName +
                     `${curr.requisites.companyName}${requisites.length !== 1 && index !== requisites.length - 1 ? ', ' : ''}`,
+                    kpp:
+                    acc.kpp +
+                    `${curr.requisites.kpp}${requisites.length !== 1 && index !== requisites.length - 1 ? ', ' : ''}`,
                 };
               },
-              { ids: [], inn: '', companyName: '' },
+              { ids: [], kpp: '', inn: '', companyName: '' },
             );
 
             return {
@@ -173,6 +176,7 @@ export class AccountsService {
               email: account.accountEmail,
               inn: {
                 ids,
+                kpp,
                 inn,
               },
               lt: account.LT,

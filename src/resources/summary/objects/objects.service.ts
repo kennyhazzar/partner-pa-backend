@@ -168,7 +168,7 @@ export class ObjectsService {
 
           const lastBill = objectLastBills.find((bill) => bill?.licensedObject?.id === object.licensedObjectId)
 
-          const { ids, inn, companyName } = requisites.reduce(
+          const { ids, inn, companyName, kpp } = requisites.reduce(
             (acc, curr, index) => {
               return {
                 ids: [...acc.ids, curr.requisites.id],
@@ -178,9 +178,12 @@ export class ObjectsService {
                 companyName:
                   acc.companyName +
                   `${curr.requisites.companyName}${requisites.length !== 1 && index !== requisites.length - 1 ? ', ' : ''}`,
+                  kpp:
+                  acc.kpp +
+                  `${curr.requisites.kpp}${requisites.length !== 1 && index !== requisites.length - 1 ? ', ' : ''}`,
               };
             },
-            { ids: [], inn: '', companyName: '' },
+            { ids: [], inn: '', companyName: '', kpp: '' },
           );
 
           return {
@@ -196,6 +199,7 @@ export class ObjectsService {
             subscribeEndDate: lastBill?.endDate,
             inn: {
               inn,
+              kpp,
               ids,
             },
             email: object.licensedObjectEmail,

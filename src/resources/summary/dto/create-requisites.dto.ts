@@ -62,7 +62,7 @@ export class CreateRequisitesDto extends UpdateEntityRequisitesDto {
   @IsString()
   @IsOptional()
   companyName?: string;
-  
+
   @ApiProperty()
   @IsString()
   @IsOptional()
@@ -91,4 +91,6 @@ export class InnResponse {
     isArray: true,
   })
   ids: Array<string>;
+  @ApiProperty()
+  kpp: string;
 }

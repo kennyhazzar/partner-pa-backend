@@ -15,6 +15,7 @@ import {
 } from 'class-validator';
 import {
   CreateRequisitesDto,
+  InnResponse,
   UpdateRequisitesDto,
 } from './create-requisites.dto';
 import { FindOptionsSelect } from 'typeorm';
@@ -172,10 +173,7 @@ export class FindObjectsResponse {
 
   title: string;
 
-  inn?: {
-    inn: string;
-    ids: Array<number>;
-  };
+  inn?: InnResponse;
 
   companyName?: string;
 
