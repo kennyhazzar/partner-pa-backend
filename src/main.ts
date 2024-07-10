@@ -21,7 +21,7 @@ async function bootstrap() {
   app.useGlobalPipes(new ValidationPipe());
 
   const config = new DocumentBuilder()
-    .setTitle('Partner')
+    .setTitle('ЛИЦЕНЗАТОР')
     .addBearerAuth()
     .build();
   const document = SwaggerModule.createDocument(app, config);
