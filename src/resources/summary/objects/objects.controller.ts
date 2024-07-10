@@ -26,7 +26,7 @@ export class ObjectsController {
   constructor(private readonly objectsService: ObjectsService) {}
 
   @ApiOperation({
-    summary: 'Создание объекта'
+    summary: 'Создание объекта',
   })
   @ApiBody({
     type: CreateObjectDto,
@@ -38,7 +38,7 @@ export class ObjectsController {
   }
 
   @ApiOperation({
-    summary: 'Получение списка объектов'
+    summary: 'Получение списка объектов',
   })
   @Get()
   async find(
@@ -50,7 +50,7 @@ export class ObjectsController {
   }
 
   @ApiOperation({
-    summary: 'Получение конкретного объекта'
+    summary: 'Получение конкретного объекта',
   })
   @Get(':id')
   async findOne(@Param('id') id: string) {

@@ -81,7 +81,10 @@ export class ObjectsService {
   }
 
   async find(payload: FindObjectsQuery, take: number = 10, skip: number = 0) {
-    return await this.entityService.findMany<LicensedObject, FindObjectsResponse>({
+    return await this.entityService.findMany<
+      LicensedObject,
+      FindObjectsResponse
+    >({
       repository: this.objectsRepository,
       cacheValue: `${take}_${skip}`,
       bypassCache: true,
@@ -120,7 +123,8 @@ export class ObjectsService {
           .addGroupBy('partner.title');
       },
       transform: async (entities) => {
-        const raw = entities as unknown as Array<FindObjectRawQueryBuilderResponse>;
+        const raw =
+          entities as unknown as Array<FindObjectRawQueryBuilderResponse>;
 
         console.log(raw);
 
@@ -130,16 +134,16 @@ export class ObjectsService {
               where: {
                 licensedObject: {
                   id: object.licensedObjectId,
-                }
+                },
               },
               relations: {
                 licensedObject: true,
               },
               order: {
-                startDate: 'DESC'
-              }
-            })
-          })
+                startDate: 'DESC',
+              },
+            });
+          }),
         );
 
         const objectRequisites = await Promise.all(
@@ -153,68 +157,73 @@ export class ObjectsService {
           }),
         );
 
-        return raw.reduce((accumulator, current) => {
-          if (
-            !accumulator.find((item) => item.licensedObjectId === current.licensedObjectId)
-          ) {
-            accumulator.push(current);
-          }
-          return accumulator;
-        }, [] as FindObjectRawQueryBuilderResponse[])
-        .map((object) => {
-          const requisites = objectRequisites.find(
-            ({ objectId }) => objectId === object.licensedObjectId,
-          ).requisites;
+        return raw
+          .reduce((accumulator, current) => {
+            if (
+              !accumulator.find(
+                (item) => item.licensedObjectId === current.licensedObjectId,
+              )
+            ) {
+              accumulator.push(current);
+            }
+            return accumulator;
+          }, [] as FindObjectRawQueryBuilderResponse[])
+          .map((object) => {
+            const requisites = objectRequisites.find(
+              ({ objectId }) => objectId === object.licensedObjectId,
+            ).requisites;
 
-          const lastBill = objectLastBills.find((bill) => bill?.licensedObject?.id === object.licensedObjectId)
+            const lastBill = objectLastBills.find(
+              (bill) => bill?.licensedObject?.id === object.licensedObjectId,
+            );
 
-          const { ids, inn, companyName, kpp } = requisites.reduce(
-            (acc, curr, index) => {
-              return {
-                ids: [...acc.ids, curr.requisites.id],
-                inn:
-                  acc.inn +
-                  `${curr.requisites.inn}${requisites.length !== 1 && index !== requisites.length - 1 ? ', ' : ''}`,
-                companyName:
-                  acc.companyName +
-                  `${curr.requisites.companyName}${requisites.length !== 1 && index !== requisites.length - 1 ? ', ' : ''}`,
+            const { ids, inn, companyName, kpp } = requisites.reduce(
+              (acc, curr, index) => {
+                return {
+                  ids: [...acc.ids, curr.requisites.id],
+                  inn:
+                    acc.inn +
+                    `${curr.requisites.inn}${requisites.length !== 1 && index !== requisites.length - 1 ? ', ' : ''}`,
+                  companyName:
+                    acc.companyName +
+                    `${curr.requisites.companyName}${requisites.length !== 1 && index !== requisites.length - 1 ? ', ' : ''}`,
                   kpp:
-                  acc.kpp +
-                  `${curr.requisites.kpp}${requisites.length !== 1 && index !== requisites.length - 1 ? ', ' : ''}`,
-              };
-            },
-            { ids: [], inn: '', companyName: '', kpp: '' },
-          );
+                    acc.kpp +
+                    `${curr.requisites.kpp}${requisites.length !== 1 && index !== requisites.length - 1 ? ', ' : ''}`,
+                };
+              },
+              { ids: [], inn: '', companyName: '', kpp: '' },
+            );
 
-          return {
-            id: object.licensedObjectId,
-            title: object.licensedObjectTitle,
-            averageBill: +object.averageCheck,
-            lt: object.LT,
-            ltv: +object.LTV,
-            createdAt: object.licensedObjectCreatedAt,
-            updatedAt: object.licensedObjectUpdatedAt,
-            isSubscribe: !!lastBill,
-            subscribeLastDate: lastBill?.startDate,
-            subscribeEndDate: lastBill?.endDate,
-            inn: {
-              inn,
-              kpp,
-              ids,
-            },
-            manager: {
-              firstName: object.managerFirstName,
-              secondName: object.managerSecondName,
-              lastName: object.managerLastName,
-            },
-            email: object.licensedObjectEmail,
-            partnerTitle: object.partnerTitle,
-            phone: object.licensedObjectPhone,
-            status: object.isActive,
-            companyName,
-          };
-        });
-      }
+            return {
+              id: object.licensedObjectId,
+              title: object.licensedObjectTitle,
+              averageBill: +object.averageCheck,
+              lt: object.LT,
+              ltv: +object.LTV,
+              createdAt: object.licensedObjectCreatedAt,
+              updatedAt: object.licensedObjectUpdatedAt,
+              isSubscribe: !!lastBill,
+              subscribeLastDate: lastBill?.startDate,
+              subscribeEndDate: lastBill?.endDate,
+              inn: {
+                inn,
+                kpp,
+                ids,
+              },
+              manager: {
+                firstName: object.managerFirstName,
+                secondName: object.managerSecondName,
+                lastName: object.managerLastName,
+              },
+              email: object.licensedObjectEmail,
+              partnerTitle: object.partnerTitle,
+              phone: object.licensedObjectPhone,
+              status: object.isActive,
+              companyName,
+            };
+          });
+      },
     });
   }
 

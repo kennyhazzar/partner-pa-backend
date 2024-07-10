@@ -122,7 +122,7 @@ export class AccountsService {
           .addGroupBy('manager.last_name')
           .addGroupBy('manager.id')
           .addGroupBy('targetRequisites.id')
-          .addGroupBy('partner.title')
+          .addGroupBy('partner.title');
       },
       transform: async (entities) => {
         const raw =
@@ -163,7 +163,7 @@ export class AccountsService {
                   companyName:
                     acc.companyName +
                     `${curr.requisites.companyName}${requisites.length !== 1 && index !== requisites.length - 1 ? ', ' : ''}`,
-                    kpp:
+                  kpp:
                     acc.kpp +
                     `${curr.requisites.kpp}${requisites.length !== 1 && index !== requisites.length - 1 ? ', ' : ''}`,
                 };

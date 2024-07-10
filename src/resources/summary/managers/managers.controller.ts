@@ -15,7 +15,13 @@ import { ManagersService } from './managers.service';
 import { ManagerDto } from '../dto/manager.dto';
 import { AuthGuard } from '../../auth/guards';
 import { isUUID } from 'class-validator';
-import { ApiBearerAuth, ApiBody, ApiOperation, ApiQuery, ApiTags } from '@nestjs/swagger';
+import {
+  ApiBearerAuth,
+  ApiBody,
+  ApiOperation,
+  ApiQuery,
+  ApiTags,
+} from '@nestjs/swagger';
 
 @ApiBearerAuth()
 @ApiTags('managers')
@@ -39,7 +45,7 @@ export class ManagersController {
   }
 
   @ApiOperation({
-    summary: 'Получение списка менеджеров'
+    summary: 'Получение списка менеджеров',
   })
   @ApiQuery({
     name: 'take',
@@ -51,12 +57,15 @@ export class ManagersController {
   })
   @Get()
   @UseGuards(AuthGuard)
-  async find(@Query('take', new DefaultValuePipe(10), ParseIntPipe) take: number, @Query('skip', new DefaultValuePipe(0), ParseIntPipe) skip: number) {
+  async find(
+    @Query('take', new DefaultValuePipe(10), ParseIntPipe) take: number,
+    @Query('skip', new DefaultValuePipe(0), ParseIntPipe) skip: number,
+  ) {
     return this.managersService.find(take, skip);
   }
 
   @ApiOperation({
-    summary: 'Получение конкретного менеджера'
+    summary: 'Получение конкретного менеджера',
   })
   @Get(':id')
   @UseGuards(AuthGuard)

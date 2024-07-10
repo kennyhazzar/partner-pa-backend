@@ -19,7 +19,13 @@ import {
   VerifyCodeDto,
   SetRoleDto,
 } from './dto';
-import { ApiBearerAuth, ApiBody, ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
+import {
+  ApiBearerAuth,
+  ApiBody,
+  ApiOperation,
+  ApiResponse,
+  ApiTags,
+} from '@nestjs/swagger';
 import { AuthGuard, RolesGuard, ThrottlerBehindProxyGuard } from './guards';
 import { Roles } from './roles.decorator';
 import { UserRole } from '@core/types';

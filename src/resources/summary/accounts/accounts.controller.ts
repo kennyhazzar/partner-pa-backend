@@ -11,7 +11,14 @@ import {
   UseGuards,
 } from '@nestjs/common';
 import { AccountsService } from './accounts.service';
-import { ApiBearerAuth, ApiBody, ApiOperation, ApiQuery, ApiResponse, ApiTags } from '@nestjs/swagger';
+import {
+  ApiBearerAuth,
+  ApiBody,
+  ApiOperation,
+  ApiQuery,
+  ApiResponse,
+  ApiTags,
+} from '@nestjs/swagger';
 import { AuthGuard } from '@resources/auth/guards';
 import {
   AccountRelationsDto,
@@ -49,12 +56,14 @@ export class AccountsController {
     isArray: true,
   })
   @Get()
-  async find(@Query() payload: FindAccountsQuery): Promise<Array<FindAccountsResponse>> {
+  async find(
+    @Query() payload: FindAccountsQuery,
+  ): Promise<Array<FindAccountsResponse>> {
     return this.accountsService.find(payload);
   }
 
   @ApiOperation({
-    summary: 'Получить один аккаунт'
+    summary: 'Получить один аккаунт',
   })
   @Get(':id')
   async findOne(
@@ -66,7 +75,7 @@ export class AccountsController {
 
   @ApiOperation({
     summary: 'Добавление ПО к аккаунту',
-    description: 'Требуется, чтобы в списке ПО отображались аккаунты'
+    description: 'Требуется, чтобы в списке ПО отображались аккаунты',
   })
   @ApiBody({
     type: UpdateSoftwareAccountDto,

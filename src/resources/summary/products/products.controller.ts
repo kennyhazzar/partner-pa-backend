@@ -1,8 +1,22 @@
-import { Body, Controller, Get, HttpCode, HttpStatus, Param, Post, UseGuards } from '@nestjs/common';
+import {
+  Body,
+  Controller,
+  Get,
+  HttpCode,
+  HttpStatus,
+  Param,
+  Post,
+  UseGuards,
+} from '@nestjs/common';
 import { ProductsService } from './products.service';
 import { CreateSoftwareDto, FindSoftwareResponse } from '../dto';
 import { AuthGuard } from '@resources/auth/guards';
-import { ApiBearerAuth, ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
+import {
+  ApiBearerAuth,
+  ApiOperation,
+  ApiResponse,
+  ApiTags,
+} from '@nestjs/swagger';
 
 @ApiTags('products')
 @ApiBearerAuth()
@@ -12,7 +26,7 @@ export class ProductsController {
   constructor(private readonly productsService: ProductsService) {}
 
   @ApiOperation({
-    summary: 'Создание ПО'
+    summary: 'Создание ПО',
   })
   @Post()
   @HttpCode(HttpStatus.OK)
@@ -23,7 +37,7 @@ export class ProductsController {
   }
 
   @ApiOperation({
-    summary: 'Список ПО'
+    summary: 'Список ПО',
   })
   @ApiResponse({
     type: FindSoftwareResponse,
@@ -35,7 +49,7 @@ export class ProductsController {
   }
 
   @ApiOperation({
-    summary: 'Конкретное ПО по ид'
+    summary: 'Конкретное ПО по ид',
   })
   @Get(':id')
   async findOne(@Param('id') id: string) {

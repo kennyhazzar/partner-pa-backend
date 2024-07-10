@@ -25,7 +25,8 @@ export class RequisitesController {
 
   @ApiOperation({
     summary: 'Создание реквизитов',
-    description: 'Можно связать с объектом, партнером, менеджером, а также сменить ид целевых реквизитов'
+    description:
+      'Можно связать с объектом, партнером, менеджером, а также сменить ид целевых реквизитов',
   })
   @ApiBody({
     type: CreateRequisitesDto,
@@ -38,7 +39,7 @@ export class RequisitesController {
 
   @ApiOperation({
     summary: 'Получение списка реквизитов',
-    description: 'Ответ смотреть в коде бека (позже допилю) хд'
+    description: 'Ответ смотреть в коде бека (позже допилю) хд',
   })
   @Get()
   async find(@Query() payload: UpdateEntityRequisitesDto) {
@@ -46,7 +47,7 @@ export class RequisitesController {
   }
 
   @ApiOperation({
-    summary: 'Получение реквизитов по ид'
+    summary: 'Получение реквизитов по ид',
   })
   @Get(':id')
   async findOneByRequisiteId(@Param() { id }: FindRequisitesQuery) {
@@ -54,7 +55,7 @@ export class RequisitesController {
   }
 
   @ApiOperation({
-    summary: 'Удаление реквизитов по ид'
+    summary: 'Удаление реквизитов по ид',
   })
   @Delete('id')
   async delete(@Param() { id }: FindRequisitesQuery) {

@@ -18,13 +18,16 @@ export class BillsController {
   })
   @Post()
   @HttpCode(HttpStatus.OK)
-  async create(@Body() payload: CreateBillWithRelationsDto) {
-    console.log(payload);
-    
+  async create(@Body() payload: CreateBillWithRelationsDto) {    
     if (!isNotEmptyObject(payload)) {
       throw new BadRequestException();
     }
 
     return this.billsService.create(payload);
+  }
+
+  @Get()
+  async find() {
+    return this.billsService.find();
   }
 }
