@@ -5,10 +5,10 @@ import {
 } from 'typeorm';
 
 abstract class DateBaseEntity {
-  @CreateDateColumn()
+  @CreateDateColumn({ name: 'created_at' })
   createdAt: Date;
 
-  @UpdateDateColumn()
+  @UpdateDateColumn({ name: 'updated_at' })
   updatedAt: Date;
 }
 

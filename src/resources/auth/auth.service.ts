@@ -34,7 +34,7 @@ export class AuthService {
     password: string,
     firstName: string,
   ): Promise<void> {
-    const user = await this.usersService.findOneByEmail(email);
+    const user = await this.usersService.findOne({ email });
 
     if (user) {
       throw new BadRequestException('Почта уже используется');
@@ -46,10 +46,10 @@ export class AuthService {
   }
 
   async sendVerificationCode(email: string): Promise<void> {
-    const user = await this.usersService.findOneByEmail(email);
+    const user = await this.usersService.findOne({ email });
 
     if (!user) {
-      throw new BadRequestException('Email not found');
+      throw new BadRequestException('Почта не найдена');
     }
 
     const code =
@@ -97,16 +97,18 @@ export class AuthService {
   }
 
   async login(email: string, password: string): Promise<LoginResponse> {
-    const user = await this.usersService.findOneByEmail(email);
+    const user = await this.usersService.findOne({ email });
     if (!user || !(await bcrypt.compare(password, user.password))) {
       throw new UnauthorizedException('Неверный пароль');
     }
 
     if (!user.isEmailConfirmed) {
+      // const cache
+
       throw new UnauthorizedException('Подтвердите почту'); //TODO: сделать автоотправку кода, если текущего нету в кеше
     }
 
-    const payload = { email };
+    const payload = { id: user.id, email, role: user.role };
     const accessToken = this.jwtService.sign(payload);
     const refreshToken = await this.usersService.createRefreshToken(user);
 
@@ -118,6 +120,7 @@ export class AuthService {
 
   async refreshToken(oldToken: string): Promise<LoginResponse> {
     const refreshToken = await this.usersService.getRefreshToken(oldToken);
+
     if (!refreshToken) {
       throw new UnauthorizedException('Invalid refresh token');
     }
@@ -141,7 +144,7 @@ export class AuthService {
   }
 
   async sendPasswordResetToken(email: string): Promise<void> {
-    const user = await this.usersService.findOneByEmail(email);
+    const user = await this.usersService.findOne({ email });
 
     if (!user) {
       throw new BadRequestException('Пользователь не найден');
@@ -179,6 +182,7 @@ export class AuthService {
     }
 
     await this.usersService.updatePassword(email, newPassword);
+    await this.cacheManager.del(cacheKey);
   }
 
   private getMailConfig(): EmailConfigs {

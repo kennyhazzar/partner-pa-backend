@@ -1,9 +1,8 @@
 import { PrimaryUuidBaseEntity } from '@core/db';
-import { Column, Entity, ManyToOne, OneToMany } from 'typeorm';
+import { Column, Entity, JoinColumn, OneToMany, OneToOne } from 'typeorm';
 import { RefreshToken } from './refresh-token.entity';
-import { LicensedObject } from '@resources/objects/entities';
 import { UserRole } from '@core/types';
-import { Partner } from '@resources/partners/entities';
+import { Manager } from '../../summary/entities';
 
 @Entity()
 export class User extends PrimaryUuidBaseEntity {
@@ -25,33 +24,31 @@ export class User extends PrimaryUuidBaseEntity {
   })
   itn: number;
 
-  @Column({ nullable: true })
+  @Column({ name: 'first_name', nullable: true })
   firstName: string;
 
-  @Column({ nullable: true })
+  @Column({ name: 'second_name', nullable: true })
   secondName: string;
 
-  @Column({ nullable: true })
+  @Column({ name: 'last_name', nullable: true })
   lastName: string;
 
   @Column({ type: 'enum', enum: UserRole, default: UserRole.USER })
   role: UserRole;
 
-  @Column({ default: false })
+  @Column({ name: 'is_email_confirmed', default: true }) //! изменить default на false когда будут экраны
   isEmailConfirmed: boolean;
 
-  @Column({ default: false })
+  @Column({ name: 'is_deleted', default: false })
   isDeleted: boolean;
 
-  @Column({ nullable: true })
+  @Column({ name: 'deleted_at', nullable: true })
   deletedAt: Date;
+
+  @OneToOne(() => Manager, (manager) => manager.userAccount)
+  @JoinColumn()
+  managerAccount: Manager;
 
   @OneToMany(() => RefreshToken, (refreshToken) => refreshToken.user)
   refreshTokens: RefreshToken[];
-
-  @OneToMany(() => LicensedObject, (licensedObject) => licensedObject.manager)
-  licensedObjects: LicensedObject[];
-
-  @ManyToOne(() => Partner, (partner) => partner.managers)
-  partner: Partner;
 }

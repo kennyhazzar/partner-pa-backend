@@ -1,12 +1,16 @@
 import { ApiProperty } from '@nestjs/swagger';
 import {
-  IsDefined,
+  IsNotEmpty,
   IsEmail,
   IsNumberString,
   IsString,
   Length,
   MinLength,
+  IsOptional,
+  IsUUID,
+  IsEnum,
 } from 'class-validator';
+import { UserRole } from '@core/types';
 
 export class EmailDto {
   @ApiProperty({
@@ -14,7 +18,7 @@ export class EmailDto {
     description: 'Электронная почта пользователя',
     required: true,
   })
-  @IsDefined()
+  @IsNotEmpty()
   @IsEmail()
   email: string;
 }
@@ -25,14 +29,14 @@ export class LoginDto extends EmailDto {
     description: 'Пароль пользователя',
     required: true,
   })
-  @IsDefined()
+  @IsNotEmpty()
   @IsString()
   @MinLength(6)
   password: string;
 }
 
 export class RegisterDto extends LoginDto {
-  @IsDefined()
+  @IsNotEmpty()
   @IsString()
   @ApiProperty({
     example: 'Браваргл',
@@ -48,7 +52,7 @@ export class VerifyCodeDto extends EmailDto {
     description: 'Код для верификации почты',
     required: true,
   })
-  @IsDefined()
+  @IsNotEmpty()
   @IsNumberString()
   @Length(6, 6)
   code: string;
@@ -60,14 +64,14 @@ export class ResetPasswordDto extends EmailDto {
     example: 'token',
     required: true,
   })
-  @IsDefined()
+  @IsNotEmpty()
   @IsString()
   token: string;
   @ApiProperty({
     description: 'Новый пароль пользователя',
     required: true,
   })
-  @IsDefined()
+  @IsNotEmpty()
   @IsString()
   newPassword: string;
 }
@@ -79,7 +83,7 @@ export class RefreshTokenDto {
     description: 'Токен обновления токена доступа',
     required: true,
   })
-  @IsDefined()
+  @IsNotEmpty()
   @IsString()
   refreshToken: string;
 }
@@ -102,4 +106,18 @@ export class LoginResponse {
 export interface SendVerifyCode {
   lastSent: number;
   code: string;
+}
+
+export class SetRoleDto {
+  @IsOptional()
+  @IsUUID()
+  id: string;
+
+  @IsOptional()
+  @IsEmail()
+  email: string;
+
+  @IsNotEmpty()
+  @IsEnum(UserRole)
+  role: UserRole;
 }

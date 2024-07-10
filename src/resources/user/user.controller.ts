@@ -10,13 +10,18 @@ import {
 } from '@nestjs/common';
 import { UserService } from './user.service';
 import { AuthGuard } from '@resources/auth/guards';
-import { ProfileDto, UserRequestContext } from './dto';
+import {
+  fullFindOptionsUserSelect,
+  UpdateProfileDto,
+  UserRequestContext,
+} from './dto';
 import {
   ApiBearerAuth,
   ApiOperation,
   ApiResponse,
   ApiTags,
 } from '@nestjs/swagger';
+import { User } from './entities';
 
 @ApiTags('users')
 @ApiBearerAuth()
@@ -30,19 +35,25 @@ export class UserController {
   })
   @ApiResponse({
     description: 'Профиль пользователя',
-    type: ProfileDto,
+    type: UpdateProfileDto,
   })
   @Get()
   @UseGuards(AuthGuard)
-  async get(@Req() req: UserRequestContext): Promise<ProfileDto> {
-    return this.userService.findOneByEmail(req.user.email, {
-      email: true,
-      phone: true,
-      itn: true,
-      firstName: true,
-      secondName: true,
-      lastName: true,
-    });
+  async get(@Req() req: UserRequestContext): Promise<UpdateProfileDto> {
+    return this.userService.findOne(
+      { id: req.user.id },
+      fullFindOptionsUserSelect,
+      (user) =>
+        ({
+          id: user.id,
+          email: user.email,
+          phone: user.phone,
+          itn: user.itn,
+          firstName: user.firstName,
+          secondName: user.secondName,
+          lastName: user.lastName,
+        }) as unknown as User,
+    );
   }
 
   @ApiOperation({
@@ -51,12 +62,15 @@ export class UserController {
   })
   @ApiResponse({
     description: 'Профиль пользователя',
-    type: ProfileDto,
+    type: UpdateProfileDto,
   })
   @Put()
   @UseGuards(AuthGuard)
-  async update(@Req() req: UserRequestContext, @Body() payload: ProfileDto) {
-    return this.userService.updateProfile(req.user, payload);
+  async update(
+    @Req() req: UserRequestContext,
+    @Body() payload: UpdateProfileDto,
+  ) {
+    return this.userService.updateProfile({ id: req.user.id }, payload);
   }
 
   @ApiOperation({
@@ -70,6 +84,6 @@ export class UserController {
   @Delete()
   @UseGuards(AuthGuard)
   async delete(@Req() req: UserRequestContext) {
-    return this.userService.deleteByEmail(req.user.email);
+    return this.userService.delete({ id: req.user.id });
   }
 }

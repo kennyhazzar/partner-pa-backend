@@ -1,11 +1,18 @@
 import { Request } from 'express';
 import { User } from '../entities';
 import { ApiProperty } from '@nestjs/swagger';
-import { IsNumber, IsOptional, IsString } from 'class-validator';
+import {
+  IsEmail,
+  IsNumber,
+  IsOptional,
+  IsString,
+  IsUUID,
+} from 'class-validator';
+import { FindOptionsSelect } from 'typeorm';
 
 export type UserRequestContext = Request & { user: User };
 
-export class ProfileDto {
+export class UpdateProfileDto {
   @ApiProperty({
     example: 'noname@mail.co',
     description: 'Электронная почта',
@@ -13,7 +20,7 @@ export class ProfileDto {
   })
   @IsOptional()
   @IsString()
-  email: string;
+  email?: string;
   @ApiProperty({
     example: '+79876543210',
     description: 'Номер телефона',
@@ -21,7 +28,7 @@ export class ProfileDto {
   })
   @IsOptional()
   @IsString()
-  phone: string;
+  phone?: string;
   @ApiProperty({
     example: 7743013902,
     description: 'ИНН',
@@ -29,7 +36,7 @@ export class ProfileDto {
   })
   @IsOptional()
   @IsNumber()
-  itn: number;
+  itn?: number;
   @ApiProperty({
     example: 'Браваргл',
     description: 'Имя пользователя',
@@ -37,7 +44,7 @@ export class ProfileDto {
   })
   @IsOptional()
   @IsString()
-  firstName: string;
+  firstName?: string;
   @ApiProperty({
     example: 'Браварглов',
     description: 'Фамилия пользователя',
@@ -45,7 +52,7 @@ export class ProfileDto {
   })
   @IsOptional()
   @IsString()
-  secondName: string;
+  secondName?: string;
   @ApiProperty({
     example: 'Браварглович',
     description: 'Отчество пользователя',
@@ -53,5 +60,43 @@ export class ProfileDto {
   })
   @IsOptional()
   @IsString()
-  lastName: string;
+  lastName?: string;
+
+  @ApiProperty()
+  @IsOptional()
+  @IsUUID()
+  managerId?: string;
 }
+
+export class ProfileDto extends UpdateProfileDto {
+  @ApiProperty()
+  id: string;
+  constructor() {
+    super();
+    delete this.managerId;
+  }
+}
+
+export class UserFindOneWhere {
+  @IsOptional()
+  @IsUUID()
+  id?: string;
+  @IsOptional()
+  @IsEmail()
+  email?: string;
+}
+
+export const fullFindOptionsUserSelect: FindOptionsSelect<User> = {
+  id: true,
+  createdAt: true,
+  deletedAt: true,
+  email: true,
+  firstName: true,
+  isDeleted: true,
+  isEmailConfirmed: true,
+  itn: true,
+  lastName: true,
+  managerAccount: {
+    id: true,
+  },
+};
