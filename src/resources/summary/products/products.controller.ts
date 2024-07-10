@@ -1,4 +1,4 @@
-import { Controller, Get, HttpCode, HttpStatus, Param, Post, UseGuards } from '@nestjs/common';
+import { Body, Controller, Get, HttpCode, HttpStatus, Param, Post, UseGuards } from '@nestjs/common';
 import { ProductsService } from './products.service';
 import { CreateSoftwareDto, FindSoftwareResponse } from '../dto';
 import { AuthGuard } from '@resources/auth/guards';
@@ -16,7 +16,9 @@ export class ProductsController {
   })
   @Post()
   @HttpCode(HttpStatus.OK)
-  async create(payload: CreateSoftwareDto) {
+  async create(@Body() payload: CreateSoftwareDto) {
+    console.log(payload);
+
     return this.productsService.create(payload);
   }
 
