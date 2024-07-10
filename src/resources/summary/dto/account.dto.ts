@@ -9,6 +9,7 @@ import {
   IsPhoneNumber,
   IsUUID,
   IsNotEmpty,
+  IsString,
 } from 'class-validator';
 import { CreateRequisitesDto } from './create-requisites.dto';
 import { Manager } from '../entities';
@@ -44,6 +45,11 @@ export class CreateAccountDto extends AccountRelationsDto {
   @IsOptional()
   @IsPhoneNumber('RU')
   phone?: string;
+
+  @ApiProperty()
+  @IsOptional()
+  @IsString()
+  franchise?: string;
 }
 
 export class FindAccountsQuery extends AccountRelationsDto {}
@@ -54,6 +60,8 @@ export class FindAccountQuery extends AccountRelationsDto {
 }
 
 export class FindAccountsResponse {
+  id: string;
+
   inn?: {
     inn: string;
     ids: Array<number>;
@@ -70,6 +78,8 @@ export class FindAccountsResponse {
   manager?: DeepPartial<Manager>;
 
   objectsRatio?: string;
+
+  lt: number;
 
   ltv: number;
 
@@ -101,4 +111,10 @@ export class UpdateAccountDto {
   @IsOptional()
   @IsPhoneNumber('RU')
   phone: string;
+}
+
+export class UpdateSoftwareAccountDto {
+  @IsNotEmpty()
+  @IsUUID()
+  softwareId: string;
 }

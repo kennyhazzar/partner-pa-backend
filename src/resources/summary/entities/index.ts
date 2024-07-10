@@ -7,3 +7,4 @@ export * from './bill.entity';
 export * from './manager.entity';
 export * from './tariff.entity';
 export * from './account.entity';
+export * from './software.entity';

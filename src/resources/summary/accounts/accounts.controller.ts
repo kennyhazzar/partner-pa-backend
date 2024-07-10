@@ -15,6 +15,7 @@ import {
   AccountRelationsDto,
   CreateAccountDto,
   FindAccountsQuery,
+  UpdateSoftwareAccountDto,
 } from '../dto';
 
 @ApiTags('accounts')
@@ -41,6 +42,14 @@ export class AccountsController {
     return this.accountsService.findOne({ id, ...payload });
   }
 
-  @Put()
-  async update(@Body() payload) {}
+  @Put(':id/software')
+  async updateSoftware(
+    @Param('id') id: string,
+    @Body() payload: UpdateSoftwareAccountDto,
+  ) {
+    return this.accountsService.updateSoftware(id, payload);
+  }
+
+  // @Put() попозж сделаю
+  // async update(@Body() payload) {}
 }

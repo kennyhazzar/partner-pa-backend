@@ -7,16 +7,20 @@ import {
   Manager,
   Partner,
   EntityRequisites,
+  Bill,
 } from '../entities';
 import { DeepPartial, FindManyOptions, Repository } from 'typeorm';
 import {
   CreateObjectDto,
+  FindObjectRawQueryBuilderResponse,
   FindObjectsQuery,
+  FindObjectsResponse,
   FindOneObjectQuery,
   fullFindOptionsObjectSelect,
   UpdateObjectDto,
 } from '../dto/object.dto';
 import { EntityService } from '@core/services';
+import { RequisitesService } from '../requisites/requisites.service';
 
 @Injectable()
 export class ObjectsService {
@@ -27,7 +31,9 @@ export class ObjectsService {
     private readonly requisitesRepository: Repository<Requisites>,
     @InjectRepository(EntityRequisites)
     private entityRequisitesRepository: Repository<EntityRequisites>,
+    @InjectRepository(Bill) private readonly billsRepository: Repository<Bill>,
     private readonly entityService: EntityService,
+    private readonly requisitesService: RequisitesService,
   ) {}
 
   async create(payload: CreateObjectDto) {
@@ -75,22 +81,131 @@ export class ObjectsService {
   }
 
   async find(payload: FindObjectsQuery, take: number = 10, skip: number = 0) {
-    const options: FindManyOptions<LicensedObject> = {
-      where: {},
-      relations: { requisites: { requisites: true } },
-      take,
-      skip,
-    };
-
-    const { where, relations } = this.getRelationsOptions(payload, options);
-
-    return await this.entityService.findMany({
+    return await this.entityService.findMany<LicensedObject, FindObjectsResponse>({
       repository: this.objectsRepository,
       cacheValue: `${take}_${skip}`,
-      where,
-      relations,
-      take,
-      skip,
+      bypassCache: true,
+      queryBuilderAlias: 'licensedObject',
+      queryBuilder: (qb) => {
+        return qb
+          .leftJoin('licensedObject.licensedDocuments', 'bill')
+          .leftJoin('licensedObject.manager', 'manager')
+          .leftJoin('licensedObject.partner', 'partner')
+          .leftJoin('licensedObject.account', 'account')
+          .leftJoin('licensedObject.requisites', 'requisites')
+          .leftJoin('requisites.requisites', 'targetRequisites')
+          .select('licensedObject.email', 'licensedObjectEmail')
+          .addSelect('licensedObject.id', 'licensedObjectId')
+          .addSelect('licensedObject.title', 'licensedObjectTitle')
+          .addSelect('licensedObject.phone', 'licensedObjectPhone')
+          .addSelect('licensedObject.created_at', 'licensedObjectCreatedAt')
+          .addSelect('licensedObject.updated_at', 'licensedObjectUpdatedAt')
+          .addSelect('licensedObject.isActive', 'isActive')
+          .addSelect('manager.first_name', 'managerFirstName')
+          .addSelect('manager.second_name', 'managerSecondName')
+          .addSelect('manager.last_name', 'managerLastName')
+          .addSelect('partner.title', 'partnerTitle')
+          .addSelect('targetRequisites.id', 'reqId')
+          .groupBy('licensedObject.id')
+          .addSelect(
+            "AVG(DATE_PART('day', bill.endDate - bill.startDate))",
+            'LT',
+          )
+          .addSelect('AVG(bill.paymentAmount)', 'averageCheck')
+          .addSelect('SUM(bill.paymentAmount)', 'LTV')
+          .addGroupBy('manager.first_name')
+          .addGroupBy('manager.second_name')
+          .addGroupBy('manager.last_name')
+          .addGroupBy('targetRequisites.id')
+          .addGroupBy('partner.title');
+      },
+      transform: async (entities) => {
+        const raw = entities as unknown as Array<FindObjectRawQueryBuilderResponse>;
+
+        console.log(raw);
+
+        const objectLastBills = await Promise.all(
+          raw.map(async (object) => {
+            return await this.billsRepository.findOne({
+              where: {
+                licensedObject: {
+                  id: object.licensedObjectId,
+                }
+              },
+              relations: {
+                licensedObject: true,
+              },
+              order: {
+                startDate: 'DESC'
+              }
+            })
+          })
+        );
+
+        const objectRequisites = await Promise.all(
+          raw.map(async (object) => {
+            return {
+              requisites: await this.requisitesService.findByEntity({
+                objectId: object.licensedObjectId,
+              }),
+              objectId: object.licensedObjectId,
+            };
+          }),
+        );
+
+        return raw.reduce((accumulator, current) => {
+          if (
+            !accumulator.find((item) => item.licensedObjectId === current.licensedObjectId)
+          ) {
+            accumulator.push(current);
+          }
+          return accumulator;
+        }, [] as FindObjectRawQueryBuilderResponse[])
+        .map((object) => {
+          const requisites = objectRequisites.find(
+            ({ objectId }) => objectId === object.licensedObjectId,
+          ).requisites;
+
+          const lastBill = objectLastBills.find((bill) => bill?.licensedObject?.id === object.licensedObjectId)
+
+          const { ids, inn, companyName } = requisites.reduce(
+            (acc, curr, index) => {
+              return {
+                ids: [...acc.ids, curr.requisites.id],
+                inn:
+                  acc.inn +
+                  `${curr.requisites.inn}${requisites.length !== 1 && index !== requisites.length - 1 ? ', ' : ''}`,
+                companyName:
+                  acc.companyName +
+                  `${curr.requisites.companyName}${requisites.length !== 1 && index !== requisites.length - 1 ? ', ' : ''}`,
+              };
+            },
+            { ids: [], inn: '', companyName: '' },
+          );
+
+          return {
+            id: object.licensedObjectId,
+            title: object.licensedObjectTitle,
+            averageBill: +object.averageCheck,
+            lt: object.LT,
+            ltv: +object.LTV,
+            createdAt: object.licensedObjectCreatedAt,
+            updatedAt: object.licensedObjectUpdatedAt,
+            isSubscribe: !!lastBill,
+            subscribeLastDate: lastBill?.startDate,
+            subscribeEndDate: lastBill?.endDate,
+            inn: {
+              inn,
+              ids,
+            },
+            email: object.licensedObjectEmail,
+            partnerTitle: object.partnerTitle,
+            phone: object.licensedObjectPhone,
+            status: object.isActive,
+            companyName,
+          };
+        });
+      }
     });
   }
 

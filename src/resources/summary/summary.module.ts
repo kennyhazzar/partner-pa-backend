@@ -10,11 +10,13 @@ import { ManagersService } from './managers/managers.service';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import {
   Account,
+  Bill,
   EntityRequisites,
   LicensedObject,
   Manager,
   Partner,
   Requisites,
+  Software,
 } from './entities';
 import { UserModule } from '../user/user.module';
 import { AuthModule } from '../auth/auth.module';
@@ -28,6 +30,7 @@ import { FinancesController } from '../finances/finances.controller';
 import { FinancesService } from '../finances/finances.service';
 import { RequisitesModule } from './requisites/requisites.module';
 import { RequisitesService } from './requisites/requisites.service';
+import { BillsModule } from './bills/bills.module';
 
 @Module({
   imports: [
@@ -40,9 +43,12 @@ import { RequisitesService } from './requisites/requisites.service';
       EntityRequisites,
       Partner,
       Account,
+      Software,
+      Bill,
     ]),
     CacheModule.registerAsync<RedisClientOptions>(CacheConfig),
     RequisitesModule,
+    BillsModule,
   ],
   controllers: [
     ProductsController,
@@ -51,6 +57,7 @@ import { RequisitesService } from './requisites/requisites.service';
     ManagersController,
     ObjectsController,
     FinancesController,
+    ProductsController,
   ],
   providers: [
     EntityService,

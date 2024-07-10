@@ -36,7 +36,7 @@ export class User extends PrimaryUuidBaseEntity {
   @Column({ type: 'enum', enum: UserRole, default: UserRole.USER })
   role: UserRole;
 
-  @Column({ name: 'is_email_confirmed', default: false })
+  @Column({ name: 'is_email_confirmed', default: true }) //! изменить default на false когда будут экраны
   isEmailConfirmed: boolean;
 
   @Column({ name: 'is_deleted', default: false })

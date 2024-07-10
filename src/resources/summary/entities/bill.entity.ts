@@ -6,8 +6,8 @@ import { InvoiceStatus } from '@core/types';
 
 @Entity()
 export class Bill extends PrimaryUuidBaseEntity {
-  @Column({ name: 'document_name' })
-  documentName: string;
+  @Column({ name: 'document_name', nullable: true })
+  documentName?: string;
 
   @Column({ name: 'document_path', nullable: true })
   documentPath?: string;
@@ -29,7 +29,7 @@ export class Bill extends PrimaryUuidBaseEntity {
   })
   invoiceStatus: string;
 
-  @Column({ name: 'start_date' })
+  @Column({ name: 'start_date', default: new Date() })
   startDate: Date;
 
   @Column({ name: 'end_date' })

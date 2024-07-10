@@ -145,3 +145,58 @@ export const fullFindOptionsObjectSelect: FindOptionsSelect<LicensedObject> = {
   createdAt: true,
   updatedAt: true,
 };
+
+export class FindObjectRawQueryBuilderResponse {
+  licensedObjectId:    string;
+  licensedObjectCreatedAt: Date;
+  licensedObjectUpdatedAt: Date;
+  licensedObjectEmail: string;
+  licensedObjectPhone: string;
+  licensedObjectTitle: string;
+  partnerTitle:        string;
+  reqId:               string;
+  managerFirstName:    string;
+  managerSecondName:   string;
+  managerLastName:     string;
+  LT:                  number;
+  averageCheck:        string;
+  LTV:                 string;
+  isActive: boolean;
+}
+
+export class FindObjectsResponse {
+  id: string;
+
+  title: string;
+
+  inn?: {
+    inn: string;
+    ids: Array<number>;
+  };
+
+  companyName?: string;
+
+  email: string;
+
+  phone: string;
+
+  partnerTitle: string;
+
+  status: boolean;
+
+  isSubscribe: boolean;
+
+  subscribeLastDate: Date;
+
+  subscribeEndDate: Date;
+
+  lt: number;
+
+  ltv: number;
+
+  averageBill: number;
+
+  createdAt: Date;
+
+  updatedAt: Date;
+}

@@ -1,5 +1,9 @@
 import { EntityService } from '@core/services';
-import { Injectable, NotFoundException } from '@nestjs/common';
+import {
+  BadRequestException,
+  Injectable,
+  NotFoundException,
+} from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Account, Manager, Partner } from '../entities';
 import { FindManyOptions, Repository } from 'typeorm';
@@ -9,13 +13,16 @@ import {
   FindAccountsQuery,
   FindAccountsRawQueryBuilderResponse,
   FindAccountsResponse,
+  UpdateSoftwareAccountDto,
 } from '../dto';
 import { RequisitesService } from '@resources/summary/requisites/requisites.service';
+import { ProductsService } from '../products/products.service';
 
 @Injectable()
 export class AccountsService {
   constructor(
     private readonly requisitesService: RequisitesService,
+    private readonly productsService: ProductsService,
     private readonly entityService: EntityService,
     @InjectRepository(Account)
     private readonly accountsRepository: Repository<Account>,
@@ -28,6 +35,7 @@ export class AccountsService {
 
     account.email = payload?.email;
     account.phone = payload?.phone;
+    account.franchise = payload?.franchise;
 
     if (payload?.partnerId) {
       account.partner = { id: payload?.partnerId } as Partner;
@@ -89,13 +97,22 @@ export class AccountsService {
           .addSelect('manager.last_name', 'managerLastName')
           .addSelect('targetRequisites.id', 'reqId')
           .addSelect('partner.title', 'partnerTitle')
-          .addSelect('COUNT(licensedObject.id)', 'totalLicensedObjects')
-          .addSelect(`
+          .addSelect(
+            'COUNT(DISTINCT licensedObject.id)',
+            'totalLicensedObjects',
+          )
+          .addSelect(
+            `
             COUNT(DISTINCT licensedObject.id)
             FILTER (WHERE licensedObject.isActive = true 
             OR (bill.invoiceStatus = 'paid' AND bill.startDate <= NOW() AND bill.endDate >= NOW()))
-        `, 'activeLicensedObjects')
-          .addSelect('AVG(DATE_PART(\'day\', bill.endDate - bill.startDate))', 'LT')
+        `,
+            'activeLicensedObjects',
+          )
+          .addSelect(
+            "AVG(DATE_PART('day', bill.endDate - bill.startDate))",
+            'LT',
+          )
           .addSelect('AVG(bill.paymentAmount)', 'averageCheck')
           .addSelect('SUM(bill.paymentAmount)', 'LTV')
           .groupBy('account.id')
@@ -108,8 +125,6 @@ export class AccountsService {
       transform: async (entities) => {
         const raw =
           entities as unknown as Array<FindAccountsRawQueryBuilderResponse>;
-
-        console.log(raw);
 
         const accountRequisites = await Promise.all(
           raw.map(async (account) => {
@@ -179,7 +194,7 @@ export class AccountsService {
   async findOne(payload: FindAccountQuery) {
     const { where, relations } = this.getRelationsOptions(payload, {
       where: { id: payload.id },
-      relations: { requisites: { requisites: true } },
+      relations: { requisites: { requisites: true }, software: true },
     });
 
     const account = await this.entityService.findOne<Account>({
@@ -219,5 +234,26 @@ export class AccountsService {
     }
 
     return newOptions;
+  }
+
+  async updateSoftware(id: string, { softwareId }: UpdateSoftwareAccountDto) {
+    const software = await this.productsService.findOne(softwareId);
+
+    if (!software) {
+      throw new BadRequestException('Такого ПО не существует');
+    }
+
+    const account = await this.findOne({
+      id,
+    });
+
+    if (!account) {
+      throw new BadRequestException('Такого аккаунта не существует');
+    }
+
+    return await this.accountsRepository.save({
+      ...account,
+      software: { id: softwareId },
+    });
   }
 }

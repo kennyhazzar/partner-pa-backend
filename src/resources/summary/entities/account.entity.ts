@@ -14,6 +14,12 @@ export class Account extends PrimaryUuidBaseEntity {
   @Column({ nullable: true })
   phone?: string;
 
+  @Column({ nullable: true })
+  franchise?: string;
+
+  @Column({ default: false })
+  isActive: boolean;
+
   @OneToMany(() => EntityRequisites, (requisites) => requisites.account, {
     nullable: true,
     onDelete: 'SET NULL',
