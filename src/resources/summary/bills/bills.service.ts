@@ -3,6 +3,7 @@ import { CreateBillWithRelationsDto } from '../dto/bill.dto';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Bill } from '../entities';
 import { Repository } from 'typeorm';
+import { getRequisites } from '../requisites/utils';
 
 @Injectable()
 export class BillsService {
@@ -49,26 +50,8 @@ export class BillsService {
       return [];
     }
 
-    console.log(bills);
-
     return bills.map((bill) => {
-      const requisites = bill?.licensedObject?.requisites.reduce(
-        (acc, curr, index) => {
-          return {
-            ids: [...acc.ids, curr.requisites.id],
-            inn:
-              acc.inn +
-              `${curr.requisites.inn}${bill?.licensedObject?.requisites.length !== 1 && index !== bill?.licensedObject?.requisites.length - 1 ? ', ' : ''}`,
-            companyName:
-              acc.companyName +
-              `${curr.requisites.companyName}${bill?.licensedObject?.requisites.length !== 1 && index !== bill?.licensedObject?.requisites.length - 1 ? ', ' : ''}`,
-            kpp:
-              acc.kpp +
-              `${curr.requisites.kpp}${bill?.licensedObject?.requisites.length !== 1 && index !== bill?.licensedObject?.requisites.length - 1 ? ', ' : ''}`,
-          };
-        },
-        { ids: [], kpp: '', inn: '', companyName: '' },
-      );
+      const requisites = getRequisites(bill?.licensedObject?.requisites);
 
       return {
         title: bill?.documentName,

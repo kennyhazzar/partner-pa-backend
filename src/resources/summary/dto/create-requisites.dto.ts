@@ -84,13 +84,23 @@ export class FindRequisitesQuery {
 }
 
 export class InnResponse {
-  @ApiProperty()
+  @ApiProperty({
+    required: false,
+    nullable: true,
+  })
   inn: string;
   @ApiProperty({
+    required: false,
+    nullable: true,
     type: String,
     isArray: true,
   })
   ids: Array<string>;
   @ApiProperty()
   kpp: string;
+  @ApiProperty({
+    required: false,
+    nullable: true,
+  })
+  companyName?: string;
 }
