@@ -6,15 +6,18 @@ import {
   HttpCode,
   HttpStatus,
   Post,
+  UseGuards,
 } from '@nestjs/common';
 import { BillsService } from './bills.service';
 import { CreateBillWithRelationsDto } from '../dto/bill.dto';
 import { isNotEmptyObject } from 'class-validator';
 import { ApiBearerAuth, ApiBody, ApiOperation, ApiTags } from '@nestjs/swagger';
+import { AuthGuard } from '@resources/auth/guards';
 
 @ApiBearerAuth()
 @ApiTags('bills')
 @Controller('bills')
+@UseGuards(AuthGuard)
 export class BillsController {
   constructor(private readonly billsService: BillsService) {}
 
