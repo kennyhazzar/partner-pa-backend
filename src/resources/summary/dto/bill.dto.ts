@@ -13,33 +13,36 @@ import {
 } from 'class-validator';
 
 export class CreateBillDto {
-  @ApiProperty()
+  @ApiProperty({
+    required: false,
+  })
   @IsOptional()
   @IsString()
   documentName?: string;
 
-  @ApiProperty()
+  @ApiProperty({
+    required: false,
+  })
   @IsOptional()
   @IsString()
   documentPath?: string;
 
-  @ApiProperty()
-  @IsNotEmpty()
-  @IsString()
-  accountNumber: string;
-
-  @ApiProperty()
-  @IsNotEmpty()
+  @ApiProperty({
+    required: false,
+  })
+  @IsOptional()
   @IsNumber()
   invoiceAmount: number;
 
-  @ApiProperty()
-  @IsNotEmpty()
+  @ApiProperty({
+    required: false,
+  })
+  @IsOptional()
   @IsNumber()
   paymentAmount: number;
 
   @ApiProperty()
-  @IsOptional()
+  @IsNotEmpty()
   @IsDateString()
   startDate: Date;
 
@@ -56,16 +59,20 @@ export class CreateBillWithRelationsDto {
   @ValidateNested()
   @IsObject()
   @IsNotEmptyObject()
-  @IsOptional()
+  @IsNotEmpty()
   @Type(() => CreateBillDto)
   bill: CreateBillDto;
 
-  @ApiProperty()
+  @ApiProperty({
+    required: false,
+  })
   @IsOptional()
   @IsUUID()
   managerId: string;
 
-  @ApiProperty()
+  @ApiProperty({
+    required: false,
+  })
   @IsOptional()
   @IsUUID()
   licensedObjectId: string;

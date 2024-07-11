@@ -104,8 +104,6 @@ export class ProductsService {
           .addGroupBy('software.owner');
       },
       transform: async (entities) => {
-        console.log(entities);
-
         const raw =
           entities as unknown as Array<FindSoftwareRawQueryBuilderResponse>;
 

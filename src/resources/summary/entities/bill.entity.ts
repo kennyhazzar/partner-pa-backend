@@ -1,4 +1,4 @@
-import { Entity, Column, ManyToOne, JoinColumn } from 'typeorm';
+import { Entity, Column, ManyToOne, JoinColumn, Generated } from 'typeorm';
 import { LicensedObject } from './licensed-object.entity';
 import { PrimaryUuidBaseEntity } from '@core/db';
 import { Manager } from './manager.entity';
@@ -13,12 +13,13 @@ export class Bill extends PrimaryUuidBaseEntity {
   documentPath?: string;
 
   @Column({ name: 'account_number' })
-  accountNumber: string;
+  @Generated('increment')
+  accountNumber: number;
 
-  @Column({ name: 'invoice_amount' })
+  @Column({ name: 'invoice_amount', nullable: true })
   invoiceAmount: number;
 
-  @Column({ name: 'payment_amount' })
+  @Column({ name: 'payment_amount', nullable: true })
   paymentAmount: number;
 
   @Column({
@@ -27,9 +28,9 @@ export class Bill extends PrimaryUuidBaseEntity {
     enum: InvoiceStatus,
     default: InvoiceStatus.NOT_PAID,
   })
-  invoiceStatus: string;
+  invoiceStatus: InvoiceStatus;
 
-  @Column({ name: 'start_date', default: new Date() })
+  @Column({ name: 'start_date' })
   startDate: Date;
 
   @Column({ name: 'end_date' })

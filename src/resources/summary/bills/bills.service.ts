@@ -39,7 +39,7 @@ export class BillsService {
         licensedObject: {
           requisites: {
             requisites: true,
-          }
+          },
         },
         manager: true,
       },
@@ -69,29 +69,30 @@ export class BillsService {
         },
         { ids: [], kpp: '', inn: '', companyName: '' },
       );
-      
+
       return {
-      title: bill?.documentName,
-      inn: {
-        inn: requisites?.inn,
-        ids: requisites?.ids,
-        kpp: requisites?.kpp,
-        companyName: requisites?.companyName,
-      },
-      email: bill?.licensedObject?.email,
-      phone: bill?.licensedObject?.phone,
-      createdAt: bill.createdAt,
-      accountNumber: bill.accountNumber,
-      invoiceAmount: bill.invoiceAmount,
-      paymentAmount: bill.paymentAmount,
-      invoiceStatus: bill.invoiceStatus,
-      startDate: bill.startDate,
-      endDate: bill.endDate,
-      manager: {
-        firstName: bill.manager?.firstName,
-        secondName: bill.manager?.secondName,
-        lastName: bill.manager?.lastName,
-      }
-    }})
+        title: bill?.documentName,
+        inn: {
+          inn: requisites?.inn,
+          ids: requisites?.ids,
+          kpp: requisites?.kpp,
+          companyName: requisites?.companyName,
+        },
+        email: bill?.licensedObject?.email,
+        phone: bill?.licensedObject?.phone,
+        createdAt: bill.createdAt,
+        accountNumber: bill.accountNumber,
+        invoiceAmount: bill.invoiceAmount,
+        paymentAmount: bill.paymentAmount,
+        invoiceStatus: bill.invoiceStatus,
+        startDate: bill.startDate,
+        endDate: bill.endDate,
+        manager: {
+          firstName: bill.manager?.firstName,
+          secondName: bill.manager?.secondName,
+          lastName: bill.manager?.lastName,
+        },
+      };
+    });
   }
 }

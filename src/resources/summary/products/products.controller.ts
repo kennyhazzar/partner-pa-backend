@@ -31,8 +31,6 @@ export class ProductsController {
   @Post()
   @HttpCode(HttpStatus.OK)
   async create(@Body() payload: CreateSoftwareDto) {
-    console.log(payload);
-
     return this.productsService.create(payload);
   }
 

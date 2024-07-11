@@ -126,8 +126,6 @@ export class ObjectsService {
         const raw =
           entities as unknown as Array<FindObjectRawQueryBuilderResponse>;
 
-        console.log(raw);
-
         const objectLastBills = await Promise.all(
           raw.map(async (object) => {
             return await this.billsRepository.findOne({
