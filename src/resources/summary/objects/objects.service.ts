@@ -21,6 +21,7 @@ import {
 } from '../dto/object.dto';
 import { EntityService } from '@core/services';
 import { RequisitesService } from '../requisites/requisites.service';
+import { getRequisites } from '../requisites/utils';
 
 @Injectable()
 export class ObjectsService {
@@ -175,23 +176,7 @@ export class ObjectsService {
               (bill) => bill?.licensedObject?.id === object.licensedObjectId,
             );
 
-            const { ids, inn, companyName, kpp } = requisites.reduce(
-              (acc, curr, index) => {
-                return {
-                  ids: [...acc.ids, curr.requisites.id],
-                  inn:
-                    acc.inn +
-                    `${curr.requisites.inn}${requisites.length !== 1 && index !== requisites.length - 1 ? ', ' : ''}`,
-                  companyName:
-                    acc.companyName +
-                    `${curr.requisites.companyName}${requisites.length !== 1 && index !== requisites.length - 1 ? ', ' : ''}`,
-                  kpp:
-                    acc.kpp +
-                    `${curr.requisites.kpp}${requisites.length !== 1 && index !== requisites.length - 1 ? ', ' : ''}`,
-                };
-              },
-              { ids: [], inn: '', companyName: '', kpp: '' },
-            );
+            const requisitesObject = getRequisites(requisites);
 
             return {
               id: object.licensedObjectId,
@@ -205,9 +190,9 @@ export class ObjectsService {
               subscribeLastDate: lastBill?.startDate,
               subscribeEndDate: lastBill?.endDate,
               inn: {
-                inn,
-                kpp,
-                ids,
+                inn: requisitesObject?.inn,
+                kpp: requisitesObject?.kpp,
+                ids: requisitesObject?.ids,
               },
               manager: {
                 firstName: object.managerFirstName,
@@ -218,7 +203,7 @@ export class ObjectsService {
               partnerTitle: object.partnerTitle,
               phone: object.licensedObjectPhone,
               status: object.isActive,
-              companyName,
+              companyName: requisitesObject?.companyName,
             };
           });
       },

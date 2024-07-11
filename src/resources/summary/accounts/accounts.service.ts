@@ -17,6 +17,7 @@ import {
 } from '../dto';
 import { RequisitesService } from '@resources/summary/requisites/requisites.service';
 import { ProductsService } from '../products/products.service';
+import { getRequisites } from '../requisites/utils';
 
 @Injectable()
 export class AccountsService {
@@ -153,35 +154,19 @@ export class AccountsService {
               ({ accountId }) => accountId === account.accountId,
             ).requisites;
 
-            const { ids, inn, companyName, kpp } = requisites.reduce(
-              (acc, curr, index) => {
-                return {
-                  ids: [...acc.ids, curr.requisites.id],
-                  inn:
-                    acc.inn +
-                    `${curr.requisites.inn}${requisites.length !== 1 && index !== requisites.length - 1 ? ', ' : ''}`,
-                  companyName:
-                    acc.companyName +
-                    `${curr.requisites.companyName}${requisites.length !== 1 && index !== requisites.length - 1 ? ', ' : ''}`,
-                  kpp:
-                    acc.kpp +
-                    `${curr.requisites.kpp}${requisites.length !== 1 && index !== requisites.length - 1 ? ', ' : ''}`,
-                };
-              },
-              { ids: [], kpp: '', inn: '', companyName: '' },
-            );
+            const requisitesObject = getRequisites(requisites);
 
             return {
               id: account.accountId,
               email: account.accountEmail,
               inn: {
-                ids,
-                kpp,
-                inn,
+                ids: requisitesObject?.ids,
+                kpp: requisitesObject?.kpp,
+                inn: requisitesObject?.inn,
               },
               lt: account.LT,
               ltv: +account.LTV,
-              companyName,
+              companyName: requisitesObject?.companyName,
               averageBill: +account.averageCheck,
               partner: account.partnerTitle,
               objectsRatio: `${account.activeLicensedObjects} / ${account.totalLicensedObjects}`,
