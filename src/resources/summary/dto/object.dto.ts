@@ -22,17 +22,23 @@ import { FindOptionsSelect } from 'typeorm';
 import { LicensedObject } from '../entities';
 
 export class ObjectsRelationsDto {
-  @ApiProperty()
+  @ApiProperty({
+    required: true,
+  })
   @IsOptional()
   @IsUUID()
   partnerId?: string;
 
-  @ApiProperty()
+  @ApiProperty({
+    required: true,
+  })
   @IsOptional()
   @IsUUID()
   managerId?: string;
 
-  @ApiProperty()
+  @ApiProperty({
+    required: true,
+  })
   @IsOptional()
   @IsUUID()
   accountId?: string;
@@ -50,6 +56,7 @@ export class CreateObjectDto extends ObjectsRelationsDto {
 
   @ApiProperty({
     type: CreateRequisitesDto,
+    required: false,
     isArray: true,
   })
   @ValidateNested({ each: true })
@@ -57,14 +64,18 @@ export class CreateObjectDto extends ObjectsRelationsDto {
   @Type(() => CreateRequisitesDto)
   @IsArray()
   @IsOptional()
-  requisites: CreateRequisitesDto[];
+  requisites?: CreateRequisitesDto[];
 
-  @ApiProperty()
+  @ApiProperty({
+    required: false,
+  })
   @IsOptional()
   @IsString()
   email?: string;
 
-  @ApiProperty()
+  @ApiProperty({
+    required: false,
+  })
   @IsOptional()
   @IsString()
   phone?: string;
@@ -73,30 +84,38 @@ export class CreateObjectDto extends ObjectsRelationsDto {
 export class ObjectDetails {
   @ApiProperty({
     description: 'Название объекта',
-    required: true,
+    required: false,
   })
   @IsOptional()
   @IsString()
   title?: string;
 
-  @ApiProperty()
+  @ApiProperty({
+    required: false,
+  })
   @IsOptional()
   @IsString()
   email?: string;
 
-  @ApiProperty()
+  @ApiProperty({
+    required: false,
+  })
   @IsOptional()
   @IsString()
   phone?: string;
 
-  @ApiProperty()
+  @ApiProperty({
+    required: false,
+  })
   @IsOptional()
   @IsDate()
   dateOfEstablishment?: Date;
 }
 
 export class UpdateObjectDto extends ObjectsRelationsDto {
-  @ApiProperty()
+  @ApiProperty({
+    required: false,
+  })
   @ValidateNested()
   @IsObject()
   @IsNotEmptyObject()
@@ -104,7 +123,9 @@ export class UpdateObjectDto extends ObjectsRelationsDto {
   @Type(() => ObjectDetails)
   details: ObjectDetails;
 
-  @ApiProperty()
+  @ApiProperty({
+    required: false,
+  })
   @ValidateNested({ each: true })
   @ArrayMinSize(1)
   @IsOptional()

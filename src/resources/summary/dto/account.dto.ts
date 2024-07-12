@@ -35,6 +35,7 @@ export class CreateAccountDto extends AccountRelationsDto {
   @ApiProperty({
     description: 'Массив реквизитов',
     type: CreateRequisitesDto,
+    isArray: true,
   })
   @ValidateNested({ each: true })
   @ArrayMinSize(1)
@@ -43,17 +44,23 @@ export class CreateAccountDto extends AccountRelationsDto {
   @IsOptional()
   requisites: CreateRequisitesDto[];
 
-  @ApiProperty()
+  @ApiProperty({
+    required: true,
+  })
   @IsOptional()
   @IsEmail()
   email?: string;
 
-  @ApiProperty()
+  @ApiProperty({
+    required: true,
+  })
   @IsOptional()
   @IsPhoneNumber('RU')
   phone?: string;
 
-  @ApiProperty()
+  @ApiProperty({
+    required: true,
+  })
   @IsOptional()
   @IsString()
   franchise?: string;
@@ -61,6 +68,7 @@ export class CreateAccountDto extends AccountRelationsDto {
 
 export class FindAccountsQuery extends AccountRelationsDto {}
 export class FindAccountQuery extends AccountRelationsDto {
+  @ApiProperty()
   @IsNotEmpty()
   @IsUUID()
   id?: string;
@@ -69,21 +77,34 @@ export class FindAccountQuery extends AccountRelationsDto {
 export class FindAccountsResponse {
   @ApiProperty()
   id: string;
-  @ApiProperty()
+  @ApiProperty({
+    nullable: true,
+  })
   inn?: InnResponse;
-  @ApiProperty()
+  @ApiProperty({
+    nullable: true,
+  })
   companyName?: string;
-  @ApiProperty()
+  @ApiProperty({
+    nullable: true,
+  })
   email?: string;
-  @ApiProperty()
+  @ApiProperty({
+    nullable: true,
+  })
   phone?: string;
-  @ApiProperty()
+  @ApiProperty({
+    nullable: true,
+  })
   partner?: string;
   @ApiProperty({
     type: Manager,
+    nullable: true,
   })
   manager?: DeepPartial<Manager>;
-  @ApiProperty()
+  @ApiProperty({
+    nullable: true,
+  })
   objectsRatio?: string;
   @ApiProperty()
   lt: number;
