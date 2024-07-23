@@ -58,12 +58,18 @@ export class CreateRequisitesDto extends UpdateEntityRequisitesDto {
   @IsNotEmpty()
   kpp: string;
 
-  @ApiProperty()
+  @ApiProperty({
+    nullable: true,
+    required: true,
+  })
   @IsString()
   @IsOptional()
   companyName?: string;
 
-  @ApiProperty()
+  @ApiProperty({
+    nullable: true,
+    required: true,
+  })
   @IsString()
   @IsOptional()
   address?: string;
