@@ -179,7 +179,9 @@ export class FindObjectRawQueryBuilderResponse {
   licensedObjectPhone: string;
   licensedObjectTitle: string;
   partnerTitle: string;
+  partnerId: string;
   reqId: string;
+  managerId: string;
   managerFirstName: string;
   managerSecondName: string;
   managerLastName: string;

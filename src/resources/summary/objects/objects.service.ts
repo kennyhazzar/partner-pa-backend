@@ -91,37 +91,68 @@ export class ObjectsService {
       bypassCache: true,
       queryBuilderAlias: 'licensedObject',
       queryBuilder: (qb) => {
-        return qb
-          .leftJoin('licensedObject.licensedDocuments', 'bill')
-          .leftJoin('licensedObject.manager', 'manager')
-          .leftJoin('licensedObject.partner', 'partner')
-          .leftJoin('licensedObject.account', 'account')
-          .leftJoin('licensedObject.requisites', 'requisites')
-          .leftJoin('requisites.requisites', 'targetRequisites')
-          .select('licensedObject.email', 'licensedObjectEmail')
-          .addSelect('licensedObject.id', 'licensedObjectId')
-          .addSelect('licensedObject.title', 'licensedObjectTitle')
-          .addSelect('licensedObject.phone', 'licensedObjectPhone')
-          .addSelect('licensedObject.created_at', 'licensedObjectCreatedAt')
-          .addSelect('licensedObject.updated_at', 'licensedObjectUpdatedAt')
-          .addSelect('licensedObject.isActive', 'isActive')
-          .addSelect('manager.first_name', 'managerFirstName')
-          .addSelect('manager.second_name', 'managerSecondName')
-          .addSelect('manager.last_name', 'managerLastName')
-          .addSelect('partner.title', 'partnerTitle')
-          .addSelect('targetRequisites.id', 'reqId')
+        let defaultQb = qb
+        .leftJoin('licensedObject.licensedDocuments', 'bill')
+        .leftJoin('licensedObject.manager', 'manager')
+        .leftJoin('licensedObject.partner', 'partner')
+        .leftJoin('licensedObject.account', 'account')
+        .leftJoin('licensedObject.requisites', 'requisites')
+        .leftJoin('requisites.requisites', 'targetRequisites')
+        .select('licensedObject.email', 'licensedObjectEmail')
+        .addSelect('licensedObject.id', 'licensedObjectId')
+        .addSelect('licensedObject.title', 'licensedObjectTitle')
+        .addSelect('licensedObject.phone', 'licensedObjectPhone')
+        .addSelect('licensedObject.created_at', 'licensedObjectCreatedAt')
+        .addSelect('licensedObject.updated_at', 'licensedObjectUpdatedAt')
+        .addSelect('licensedObject.isActive', 'isActive')
+        .addSelect('manager.id', 'managerId')
+        .addSelect('manager.first_name', 'managerFirstName')
+        .addSelect('manager.second_name', 'managerSecondName')
+        .addSelect('manager.last_name', 'managerLastName')
+        .addSelect('partner.title', 'partnerTitle')
+        .addSelect('partner.id', 'partnerId')
+        .addSelect('targetRequisites.id', 'reqId')
+        .addSelect('account.id', 'accountId')
+        .addSelect(
+          "AVG(DATE_PART('day', bill.endDate - bill.startDate))",
+          'LT',
+        )
+        .addSelect('AVG(bill.paymentAmount)', 'averageCheck')
+        .addSelect('SUM(bill.paymentAmount)', 'LTV')
+
+        if (payload?.managerId) {
+          defaultQb = defaultQb.andWhere(`manager.id = :managerId`, {
+            managerId: payload.managerId,
+          })
+        }
+
+        if (payload?.partnerId) {
+          defaultQb = defaultQb.andWhere(`partner.id = :partnerId`, {
+            partnerId: payload.partnerId,
+          })
+        }
+
+        if (payload?.accountId) {
+          defaultQb = defaultQb.andWhere(`account.id = :accountId`, {
+            accountId: payload.accountId,
+          })
+        }
+
+        console.log(take, skip);
+
+        return defaultQb
+          .take(take)
+          .skip(skip)
           .groupBy('licensedObject.id')
-          .addSelect(
-            "AVG(DATE_PART('day', bill.endDate - bill.startDate))",
-            'LT',
-          )
-          .addSelect('AVG(bill.paymentAmount)', 'averageCheck')
-          .addSelect('SUM(bill.paymentAmount)', 'LTV')
+          .addGroupBy('manager.id')
           .addGroupBy('manager.first_name')
           .addGroupBy('manager.second_name')
           .addGroupBy('manager.last_name')
           .addGroupBy('targetRequisites.id')
-          .addGroupBy('partner.title');
+          .addGroupBy('partner.id')
+          .addGroupBy('partner.title')
+          .addGroupBy('account.id')
+          .orderBy('licensedObject.created_at', 'DESC')
       },
       transform: async (entities) => {
         const raw =
@@ -195,12 +226,14 @@ export class ObjectsService {
                 ids: requisitesObject?.ids,
               },
               manager: {
+                id: object.managerId,
                 firstName: object.managerFirstName,
                 secondName: object.managerSecondName,
                 lastName: object.managerLastName,
               },
               email: object.licensedObjectEmail,
               partnerTitle: object.partnerTitle,
+              partnerId: object.partnerId,
               phone: object.licensedObjectPhone,
               status: object.isActive,
               companyName: requisitesObject?.companyName,

@@ -14,7 +14,7 @@ import {
 import { PartnersService } from './partners.service';
 import { CreatePartnerDto } from '../dto';
 import { isUUID } from 'class-validator';
-import { ApiBearerAuth, ApiBody, ApiOperation, ApiTags } from '@nestjs/swagger';
+import { ApiBearerAuth, ApiBody, ApiOperation, ApiQuery, ApiTags } from '@nestjs/swagger';
 
 @ApiBearerAuth()
 @ApiTags('partners')
@@ -36,6 +36,16 @@ export class PartnersController {
 
   @ApiOperation({
     summary: 'Получение списка партнеров',
+  })
+  @ApiQuery({
+    name: 'take',
+    required: false,
+    example: 10,
+  })
+  @ApiQuery({
+    name: 'skip',
+    required: false,
+    example: 0,
   })
   @Get()
   async find(
